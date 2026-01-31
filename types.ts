@@ -1,0 +1,55 @@
+export interface EducationInput {
+  id: string;
+  degree: string;
+  school: string;
+  year: string;
+}
+
+export interface UserInput {
+  fullName: string;
+  email: string;
+  phone: string;
+  linkedin: string;
+  github: string;
+  website: string;
+  jobTitle: string;
+  experienceLevel: string;
+  skills: string;
+  experience: string;
+  education: EducationInput[];
+  projects: string;
+}
+
+export interface GeneratedResume {
+  professionalSummary: string;
+  workExperience: {
+    role: string;
+    company: string;
+    location: string;
+    duration: string;
+    points: string[];
+  }[];
+  skills: {
+    category: string;
+    items: string[];
+  }[];
+  education: {
+    degree: string;
+    institution: string;
+    location: string;
+    year: string;
+    details?: string;
+  }[];
+  projects: {
+    name: string;
+    description: string;
+    technologies: string[];
+    link?: string;
+  }[];
+}
+
+export enum AppState {
+  EDITING,
+  GENERATING,
+  VIEWING,
+}
