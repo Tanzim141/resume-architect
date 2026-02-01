@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { UserInput } from '../types';
-import { Briefcase, GraduationCap, Code, User, FileText, Github, Globe, Trash2, Plus } from 'lucide-react';
+import React from 'react';
+import { UserInput, TemplateId } from '../types';
+import { Briefcase, GraduationCap, Code, User, FileText, Github, Globe, Layout, Image as ImageIcon, Plus, Trash2 } from 'lucide-react';
 
 interface ResumeFormProps {
   input: UserInput;
@@ -10,36 +10,73 @@ interface ResumeFormProps {
 }
 
 const ResumeForm: React.FC<ResumeFormProps> = ({ input, setInput, onGenerate, isGenerating }) => {
-  const [newEdu, setNewEdu] = useState({ degree: '', school: '', year: new Date().getFullYear().toString() });
 
   const handleChange = (field: keyof UserInput, value: any) => {
     setInput((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleAddEducation = () => {
-    if (newEdu.degree.trim() && newEdu.school.trim()) {
-      setInput(prev => ({
-        ...prev,
-        education: [...prev.education, { ...newEdu, id: Date.now().toString() }]
-      }));
-      setNewEdu({ degree: '', school: '', year: new Date().getFullYear().toString() });
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        handleChange('photo', reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  const handleRemoveEducation = (id: string) => {
+  const removePhoto = () => {
+    handleChange('photo', '');
+  };
+
+  const updateEducation = (index: number, field: string, value: string) => {
+    const updatedEdu = [...input.education];
+    updatedEdu[index] = { ...updatedEdu[index], [field]: value };
+    setInput(prev => ({ ...prev, education: updatedEdu }));
+  };
+
+  const addEducationField = () => {
     setInput(prev => ({
       ...prev,
-      education: prev.education.filter(e => e.id !== id)
+      education: [
+        ...prev.education, 
+        { 
+          id: Date.now().toString(), 
+          degree: '', 
+          school: '', 
+          startYear: (new Date().getFullYear() - 4).toString(), 
+          endYear: 'Present' 
+        }
+      ]
     }));
+  };
+
+  const removeEducationField = (index: number) => {
+    if (input.education.length > 1) {
+      const updatedEdu = input.education.filter((_, i) => i !== index);
+      setInput(prev => ({ ...prev, education: updatedEdu }));
+    } else {
+        // If only one exists, just clear it instead of removing
+        const updatedEdu = [...input.education];
+        updatedEdu[0] = { ...updatedEdu[0], degree: '', school: '' };
+        setInput(prev => ({ ...prev, education: updatedEdu }));
+    }
   };
 
   const inputClasses = "w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all bg-gray-50 text-gray-900 placeholder-gray-400";
   const textareaClasses = "w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all resize-y text-sm bg-gray-50 text-gray-900 placeholder-gray-400";
 
-  // Generate years for dropdown
+  // Generate years for dropdown (1980 - current + 5)
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 50 }, (_, i) => (currentYear + 5) - i);
 
+  const templates: { id: TemplateId; name: string; desc: string }[] = [
+    { id: 'classic', name: 'Classic ATS', desc: 'Clean, text-focused, best for parsing.' },
+    { id: 'modern', name: 'Modern Columns', desc: 'Split layout, sleek and professional.' },
+    { id: 'creative', name: '3D Creative', desc: 'Visual profile with photo & depth.' },
+  ];
+  
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       <div className="bg-sky-600 p-6 text-white">
@@ -50,11 +87,75 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ input, setInput, onGenerate, is
       </div>
 
       <div className="p-6 space-y-8">
+        
+        {/* Template Selection */}
+        <section>
+          <h3 className="text-lg font-bold text-sky-700 mb-4 flex items-center gap-2">
+            <Layout className="w-5 h-5 text-sky-500" /> Select Template
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {templates.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => handleChange('templateId', t.id)}
+                className={`p-4 rounded-lg border-2 text-left transition-all ${
+                  input.templateId === t.id
+                    ? 'border-sky-500 bg-sky-50 ring-1 ring-sky-500'
+                    : 'border-gray-200 hover:border-sky-200 hover:bg-gray-50'
+                }`}
+              >
+                <div className="font-bold text-gray-900">{t.name}</div>
+                <div className="text-xs text-gray-500 mt-1">{t.desc}</div>
+                {input.templateId === t.id && (
+                  <div className="mt-2 text-xs font-semibold text-sky-600 flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-sky-600"></span> Selected
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <hr className="border-gray-100" />
+
         {/* Personal Info */}
         <section>
           <h3 className="text-lg font-bold text-sky-700 mb-4 flex items-center gap-2">
             <User className="w-5 h-5 text-sky-500" /> Personal Details
           </h3>
+          
+          <div className="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+             <div className="flex items-center gap-4">
+                <div className="h-16 w-16 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center border border-gray-300">
+                  {input.photo ? (
+                    <img src={input.photo} alt="Profile" className="h-full w-full object-cover" />
+                  ) : (
+                    <ImageIcon className="w-8 h-8 text-gray-400" />
+                  )}
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Profile Photo {input.templateId === 'creative' ? '(Recommended)' : '(Optional)'}
+                  </label>
+                  <div className="flex gap-2">
+                    <label className="cursor-pointer bg-white border border-gray-300 px-3 py-1.5 rounded text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                      Upload Image
+                      <input type="file" className="hidden" accept="image/*" onChange={handlePhotoUpload} />
+                    </label>
+                    {input.photo && (
+                      <button 
+                        onClick={removePhoto}
+                        className="text-red-500 hover:text-red-700 text-sm font-medium px-2"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Recommended for Creative/3D templates</p>
+                </div>
+             </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-sm font-medium text-sky-700">Full Name</label>
@@ -192,61 +293,72 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ input, setInput, onGenerate, is
               <GraduationCap className="w-5 h-5 text-sky-500" /> Education
             </h3>
             
-            <div className="space-y-3">
-              {/* Added Education List */}
-              {input.education.length > 0 && (
-                <div className="space-y-2 mb-4">
-                  {input.education.map((edu) => (
-                    <div key={edu.id} className="flex justify-between items-center bg-sky-50 p-3 rounded-lg border border-sky-100">
-                      <div>
-                        <p className="font-semibold text-sm text-sky-900">{edu.degree}</p>
-                        <p className="text-xs text-sky-700">{edu.school} • {edu.year}</p>
-                      </div>
-                      <button 
-                        onClick={() => handleRemoveEducation(edu.id)}
-                        className="text-red-400 hover:text-red-600 p-1"
-                      >
+            <div className="space-y-4">
+              {input.education.map((edu, index) => (
+                <div key={edu.id} className="bg-gray-50 p-4 rounded-lg border border-gray-200 relative">
+                  {input.education.length > 1 && (
+                     <button 
+                        onClick={() => removeEducationField(index)}
+                        className="absolute top-2 right-2 text-gray-400 hover:text-red-500 p-1"
+                        title="Remove"
+                     >
                         <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
+                     </button>
+                  )}
+                  
+                  <div className="space-y-2">
+                     <input 
+                        type="text" 
+                        value={edu.degree}
+                        onChange={(e) => updateEducation(index, 'degree', e.target.value)}
+                        placeholder="Degree (e.g. B.Sc in CS)"
+                        className="w-full p-2 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-sky-500 outline-none bg-white text-gray-900 placeholder-gray-400"
+                     />
+                     <input 
+                        type="text" 
+                        value={edu.school}
+                        onChange={(e) => updateEducation(index, 'school', e.target.value)}
+                        placeholder="Institution (e.g. Dhaka University)"
+                        className="w-full p-2 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-sky-500 outline-none bg-white text-gray-900 placeholder-gray-400"
+                     />
+                  </div>
 
-              {/* Add Education Form */}
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-3">
-                <input 
-                  type="text" 
-                  value={newEdu.degree}
-                  onChange={(e) => setNewEdu(prev => ({ ...prev, degree: e.target.value }))}
-                  placeholder="Degree (e.g. B.Sc in CS)"
-                  className="w-full p-2 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-sky-500 outline-none bg-gray-50 text-gray-900 placeholder-gray-400"
-                />
-                <input 
-                  type="text" 
-                  value={newEdu.school}
-                  onChange={(e) => setNewEdu(prev => ({ ...prev, school: e.target.value }))}
-                  placeholder="Institution (e.g. Dhaka University)"
-                  className="w-full p-2 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-sky-500 outline-none bg-gray-50 text-gray-900 placeholder-gray-400"
-                />
-                <select
-                  value={newEdu.year}
-                  onChange={(e) => setNewEdu(prev => ({ ...prev, year: e.target.value }))}
-                  className="w-full p-2 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-sky-500 outline-none bg-gray-50 text-gray-900"
-                >
-                   <option value="Present">Present / Expected</option>
-                   {years.map(year => (
-                     <option key={year} value={year}>{year}</option>
-                   ))}
-                </select>
-                <button 
-                  onClick={handleAddEducation}
-                  disabled={!newEdu.degree || !newEdu.school}
-                  className="w-full py-2 bg-sky-100 text-sky-700 font-medium rounded hover:bg-sky-200 transition-colors flex items-center justify-center gap-1 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Plus className="w-4 h-4" /> Add Education
-                </button>
-              </div>
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                     <div className="space-y-1">
+                        <label className="text-xs text-gray-500 font-medium ml-1">Start Year</label>
+                        <select
+                           value={edu.startYear}
+                           onChange={(e) => updateEducation(index, 'startYear', e.target.value)}
+                           className="w-full p-2 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-sky-500 outline-none bg-white text-gray-900"
+                        >
+                           {years.map(year => (
+                              <option key={`start-${edu.id}-${year}`} value={year}>{year}</option>
+                           ))}
+                        </select>
+                     </div>
+                     <div className="space-y-1">
+                        <label className="text-xs text-gray-500 font-medium ml-1">End Year</label>
+                        <select
+                           value={edu.endYear}
+                           onChange={(e) => updateEducation(index, 'endYear', e.target.value)}
+                           className="w-full p-2 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-sky-500 outline-none bg-white text-gray-900"
+                        >
+                           <option value="Present">Present</option>
+                           {years.map(year => (
+                              <option key={`end-${edu.id}-${year}`} value={year}>{year}</option>
+                           ))}
+                        </select>
+                     </div>
+                  </div>
+                </div>
+              ))}
+              
+              <button 
+                onClick={addEducationField}
+                className="w-full py-2 bg-white border border-dashed border-sky-300 text-sky-600 font-medium rounded hover:bg-sky-50 transition-colors flex items-center justify-center gap-1 text-sm"
+              >
+                <Plus className="w-4 h-4" /> Add Another Education
+              </button>
             </div>
           </section>
 
@@ -259,7 +371,7 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ input, setInput, onGenerate, is
               <textarea
                 value={input.projects}
                 onChange={(e) => handleChange('projects', e.target.value)}
-                className={`${textareaClasses} h-[17.5rem]`}
+                className={`${textareaClasses} h-32`}
                 placeholder="E-commerce website: Built with Next.js and Stripe..."
               />
             </div>

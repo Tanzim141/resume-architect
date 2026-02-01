@@ -70,8 +70,14 @@ const resumeSchema: Schema = {
 };
 
 export const generateResumeContent = async (input: UserInput): Promise<GeneratedResume> => {
-  const educationString = input.education
-    .map(e => `${e.degree} from ${e.school} (Year: ${e.year})`)
+  // Enhanced formatting for education to ensure institution is captured
+  const educationText = input.education
+    .map(edu => {
+      const yearStr = edu.endYear && edu.endYear !== edu.startYear 
+        ? `${edu.startYear} - ${edu.endYear}` 
+        : edu.startYear;
+      return `Degree: ${edu.degree}, Institution: ${edu.school}, Year: ${yearStr}`;
+    })
     .join('; ');
 
   const prompt = `
@@ -94,7 +100,7 @@ export const generateResumeContent = async (input: UserInput): Promise<Generated
     Portfolio/Website: ${input.website}
     Skills: ${input.skills}
     Work Experience Input: ${input.experience}
-    Education Input: ${educationString}
+    Education Input: ${educationText}
     Projects Input: ${input.projects}
   `;
 

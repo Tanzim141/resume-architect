@@ -1,11 +1,16 @@
+export type TemplateId = 'classic' | 'modern' | 'creative';
+
 export interface EducationInput {
   id: string;
   degree: string;
   school: string;
-  year: string;
+  startYear: string;
+  endYear: string;
 }
 
 export interface UserInput {
+  templateId: TemplateId;
+  photo?: string; // Base64 string for the image
   fullName: string;
   email: string;
   phone: string;

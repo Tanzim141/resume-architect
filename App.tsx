@@ -7,6 +7,8 @@ import { generateResumeContent } from './services/geminiService';
 import { Sparkles, AlertCircle, LogOut, User as UserIcon } from 'lucide-react';
 
 const initialInput: UserInput = {
+  templateId: 'classic',
+  photo: '',
   fullName: '',
   email: '',
   phone: '',
@@ -17,7 +19,13 @@ const initialInput: UserInput = {
   experienceLevel: 'Mid Level',
   skills: '',
   experience: '',
-  education: [],
+  education: [{
+    id: '1',
+    degree: '',
+    school: '',
+    startYear: (new Date().getFullYear() - 4).toString(),
+    endYear: 'Present'
+  }],
   projects: '',
 };
 
@@ -128,7 +136,7 @@ function App() {
                 Build your perfect resume
               </h1>
               <p className="mt-3 text-lg text-gray-500">
-                Enter your messy notes, and let AI structure them into a professional, ATS-optimized document.
+                Choose a template, enter your details, and let AI structure your professional story.
               </p>
             </div>
             <ResumeForm 

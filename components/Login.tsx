@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, LogIn, User, KeyRound, ArrowLeft, CheckCircle, UserPlus } from 'lucide-react';
+import { Sparkles, LogIn, User, KeyRound, ArrowLeft, CheckCircle, UserPlus, Eye, EyeOff } from 'lucide-react';
 
 interface LoginProps {
   onLogin: (identifier: string, type: 'email' | 'phone') => void;
@@ -20,62 +20,117 @@ const Login: React.FC<LoginProps> = ({ onLogin, onGuestLogin }) => {
 
   // Shared State
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   // Forgot password state
   const [resetIdentifier, setResetIdentifier] = useState('');
   const [resetStatus, setResetStatus] = useState<'idle' | 'sending' | 'success'>('idle');
 
+  // Helper to get users from local storage
+  const getStoredUsers = () => {
+    try {
+      const users = localStorage.getItem('resume_app_users');
+      return users ? JSON.parse(users) : {};
+    } catch (e) {
+      return {};
+    }
+  };
+
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
-    if (!identifier.trim()) {
+    const cleanIdentifier = identifier.trim();
+    const cleanPassword = password.trim();
+
+    if (!cleanIdentifier) {
       setError('Please enter your email or mobile number');
       return;
     }
     
-    if (!password.trim()) {
+    if (!cleanPassword) {
       setError('Please enter your password');
       return;
     }
 
-    const isEmail = identifier.includes('@');
-    onLogin(identifier, isEmail ? 'email' : 'phone');
+    // Check credentials against local storage
+    const users = getStoredUsers();
+    const user = users[cleanIdentifier];
+
+    if (!user || user.password !== cleanPassword) {
+      setError('Invalid email/mobile number or password. Please try again or Sign Up.');
+      return;
+    }
+
+    const isEmail = cleanIdentifier.includes('@');
+    onLogin(cleanIdentifier, isEmail ? 'email' : 'phone');
   };
 
   const handleSignupSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (!signupName.trim()) {
+    const cleanName = signupName.trim();
+    const cleanIdentifier = signupIdentifier.trim();
+    const cleanPassword = signupPassword.trim();
+
+    if (!cleanName) {
       setError('Please enter your full name');
       return;
     }
 
-    if (!signupIdentifier.trim()) {
+    if (!cleanIdentifier) {
       setError('Please enter your email or mobile number');
       return;
     }
 
-    if (!signupPassword.trim()) {
+    if (!cleanPassword) {
       setError('Please create a password');
       return;
     }
 
-    // Simulate signup success -> auto login
-    const isEmail = signupIdentifier.includes('@');
-    onLogin(signupIdentifier, isEmail ? 'email' : 'phone');
+    // Check if user already exists
+    const users = getStoredUsers();
+    if (users[cleanIdentifier]) {
+      setError('An account with this email/number already exists. Please Log In.');
+      return;
+    }
+
+    // Save new user
+    users[cleanIdentifier] = {
+      name: cleanName,
+      identifier: cleanIdentifier,
+      password: cleanPassword
+    };
+    
+    try {
+      localStorage.setItem('resume_app_users', JSON.stringify(users));
+      
+      // Auto login after successful signup
+      const isEmail = cleanIdentifier.includes('@');
+      onLogin(cleanIdentifier, isEmail ? 'email' : 'phone');
+    } catch (err) {
+      setError('Failed to create account. Please try again.');
+    }
   };
 
   const handleForgotPassword = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (!resetIdentifier.trim()) {
+    const cleanIdentifier = resetIdentifier.trim();
+
+    if (!cleanIdentifier) {
        setError('Please enter your registered email or phone');
        return;
     }
     
+    const users = getStoredUsers();
+    if (!users[cleanIdentifier]) {
+      setError('No account found with this email/number.');
+      return;
+    }
+
     setResetStatus('sending');
     
     // Simulate API call for password reset
@@ -90,7 +145,16 @@ const Login: React.FC<LoginProps> = ({ onLogin, onGuestLogin }) => {
     setError('');
     setResetStatus('idle');
     setResetIdentifier('');
-    // Optional: clear forms or keep them
+    setShowPassword(false);
+    // Clear form inputs when switching
+    if (newView === 'login') {
+      setSignupName('');
+      setSignupIdentifier('');
+      setSignupPassword('');
+    } else if (newView === 'signup') {
+      setIdentifier('');
+      setPassword('');
+    }
   };
 
   // ----------------------------------------------------------------------
@@ -226,17 +290,26 @@ const Login: React.FC<LoginProps> = ({ onLogin, onGuestLogin }) => {
               <label htmlFor="signupPassword" className="block text-sm font-medium text-gray-700 mb-1">
                 Password
               </label>
-              <input
-                type="password"
-                id="signupPassword"
-                value={signupPassword}
-                onChange={(e) => {
-                  setSignupPassword(e.target.value);
-                  setError('');
-                }}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all bg-white text-gray-900 placeholder-gray-400"
-                placeholder="Create a password"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="signupPassword"
+                  value={signupPassword}
+                  onChange={(e) => {
+                    setSignupPassword(e.target.value);
+                    setError('');
+                  }}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all bg-white text-gray-900 placeholder-gray-400 pr-10"
+                  placeholder="Create a password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
             </div>
 
             {error && <p className="text-sm text-red-600 bg-red-50 p-2 rounded border border-red-100">{error}</p>}
@@ -316,17 +389,26 @@ const Login: React.FC<LoginProps> = ({ onLogin, onGuestLogin }) => {
                 Forgot Password?
               </button>
             </div>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                setError('');
-              }}
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all bg-white text-gray-900 placeholder-gray-400"
-              placeholder="Enter your password"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setError('');
+                }}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all bg-white text-gray-900 placeholder-gray-400 pr-10"
+                placeholder="Enter your password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
           </div>
 
           {error && <p className="text-sm text-red-600 bg-red-50 p-2 rounded border border-red-100">{error}</p>}
