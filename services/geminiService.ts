@@ -22,7 +22,7 @@ const resumeSchema: Schema = {
           points: {
             type: Type.ARRAY,
             items: { type: Type.STRING },
-            description: "Action-oriented bullet points using strong verbs.",
+            description: "Action-oriented bullet points using strong verbs. Maximum 3-4 bullet points per role. Each point must be concise (max 15-20 words).",
           },
         },
         required: ["role", "company", "duration", "points"],
@@ -49,6 +49,8 @@ const resumeSchema: Schema = {
           location: { type: Type.STRING },
           year: { type: Type.STRING },
           details: { type: Type.STRING },
+          cgpa: { type: Type.STRING },
+          scoreType: { type: Type.STRING, description: "Must be exactly 'CGPA' or 'GPA'" },
         },
         required: ["degree", "institution", "year"],
       },
@@ -69,6 +71,25 @@ const resumeSchema: Schema = {
   required: ["professionalSummary", "workExperience", "skills", "education"],
 };
 
+export const chatWithAI = async (message: string, history: Array<{role: "user"|"model", parts: {text: string}[]}> = []): Promise<string> => {
+  try {
+    const chat = ai.chats.create({
+      model: "gemini-3-flash-preview",
+      config: {
+         systemInstruction: "You are a helpful AI assistant inside a Resume Builder application. Answer questions about resumes, career advice, and general topics, and communicate in whatever language the user speaks.",
+         temperature: 0.7,
+      },
+      history: history
+    });
+    
+    const response = await chat.sendMessage({ message });
+    return response.text || "I'm sorry, I couldn't generate a response.";
+  } catch (error) {
+    console.error("Error in chat:", error);
+    throw error;
+  }
+};
+
 export const generateResumeContent = async (input: UserInput): Promise<GeneratedResume> => {
   // Enhanced formatting for education to ensure institution is captured
   const educationText = input.education
@@ -76,7 +97,8 @@ export const generateResumeContent = async (input: UserInput): Promise<Generated
       const yearStr = edu.endYear && edu.endYear !== edu.startYear 
         ? `${edu.startYear} - ${edu.endYear}` 
         : edu.startYear;
-      return `Degree: ${edu.degree}, Institution: ${edu.school}, Year: ${yearStr}`;
+      const cgpaStr = edu.cgpa ? `, ${edu.scoreType || 'CGPA'}: ${edu.cgpa}` : '';
+      return `Degree: ${edu.degree}, Institution: ${edu.school}, Year: ${yearStr}${cgpaStr}`;
     })
     .join('; ');
 
@@ -91,6 +113,7 @@ export const generateResumeContent = async (input: UserInput): Promise<Generated
     - Use strong action verbs (e.g., Spearheaded, Orchestrated, Developed)
     - Do not fabricate fake experience, but polish the existing input to sound professional.
     - Make it suitable for international job markets.
+    - KEEP WORK EXPERIENCE CONCISE: Strictly limit to 3-4 bullet points per role. Each point must be a single, impactful sentence (max 15-20 words).
 
     Input Data:
     Full Name: ${input.fullName}

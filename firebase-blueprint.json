@@ -1,0 +1,65 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "A user profile",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The user ID"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The user's email"
+        },
+        "name": {
+          "type": "string",
+          "description": "The user's display name"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the user profile was created"
+        }
+      },
+      "required": ["uid", "email", "name", "createdAt"]
+    },
+    "Resume": {
+      "title": "Resume",
+      "description": "A generated resume document",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The user ID of the owner"
+        },
+        "personalInfo": {
+          "type": "object",
+          "description": "User's personal information and template choice"
+        },
+        "resumeData": {
+          "type": "object",
+          "description": "The AI-generated resume content"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the resume was saved"
+        }
+      },
+      "required": ["uid", "personalInfo", "resumeData", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/resumes/{resumeId}": {
+      "schema": "Resume",
+      "description": "Collection of saved resumes"
+    }
+  }
+}

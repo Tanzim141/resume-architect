@@ -6,6 +6,8 @@ export interface EducationInput {
   school: string;
   startYear: string;
   endYear: string;
+  cgpa?: string;
+  scoreType?: 'CGPA' | 'GPA';
 }
 
 export interface UserInput {
@@ -17,6 +19,7 @@ export interface UserInput {
   linkedin: string;
   github: string;
   website: string;
+  customLinks?: { id: string; name: string; url: string }[];
   jobTitle: string;
   experienceLevel: string;
   skills: string;
@@ -44,6 +47,8 @@ export interface GeneratedResume {
     location: string;
     year: string;
     details?: string;
+    cgpa?: string;
+    scoreType?: 'CGPA' | 'GPA';
   }[];
   projects: {
     name: string;

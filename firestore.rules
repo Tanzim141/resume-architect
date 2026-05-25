@@ -1,0 +1,117 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: user UID
+    // Fields:
+    //   - uid: string (required, immutable) - The user ID
+    //   - email: string (required) - The user's email
+    //   - name: string (required) - The user's display name
+    //   - createdAt: timestamp (required, immutable) - When the user profile was created
+    //   - role: string (optional) - The user's role (e.g., 'admin', 'user')
+    //
+    // Collection: resumes
+    // Document ID: auto-generated
+    // Fields:
+    //   - uid: string (required, immutable) - The user ID of the owner
+    //   - personalInfo: map (required) - User's personal information and template choice
+    //   - resumeData: map (required) - The AI-generated resume content
+    //   - createdAt: timestamp (required, immutable) - When the resume was saved
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.uid;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "shanjidapairin10@gmail.com" && request.auth.token.email_verified == true)); // Default admin
+    }
+    
+    function uidUnchanged() {
+      return !('uid' in request.resource.data) ||
+        request.resource.data.uid == request.auth.uid;
+    }
+    
+    function uidNotModified() {
+      return !('uid' in request.resource.data) ||
+        request.resource.data.uid == resource.data.uid;
+    }
+    
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+    
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    // Domain Validators
+    function isValidUser(data) {
+      return hasRequiredFields(['uid', 'email', 'name', 'createdAt']) &&
+             data.uid is string &&
+             data.email is string &&
+             data.name is string &&
+             data.createdAt is timestamp &&
+             (!('role' in data) || data.role in ['admin', 'user']);
+    }
+
+    function isValidResume(data) {
+      return hasRequiredFields(['uid', 'personalInfo', 'resumeData', 'createdAt']) &&
+             data.uid is string &&
+             data.personalInfo is map &&
+             data.resumeData is map &&
+             data.createdAt is timestamp;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && 
+                      isValidUser(request.resource.data) && 
+                      isOwner(userId) &&
+                      (!('role' in request.resource.data) || request.resource.data.role == 'user' || isAdmin());
+      allow update: if isAuthenticated() && 
+                      isValidUser(request.resource.data) && 
+                      isOwner(userId) &&
+                      (request.resource.data.role == resource.data.role || isAdmin());
+    }
+
+    match /resumes/{resumeId} {
+      allow read: if isDocOwner() || isAdmin();
+      allow create: if isAuthenticated() && 
+                      isValidResume(request.resource.data) && 
+                      request.resource.data.uid == request.auth.uid;
+      allow update: if isDocOwner() && 
+                      isValidResume(request.resource.data) && 
+                      uidNotModified();
+      allow delete: if isDocOwner() || isAdmin();
+    }
+
+    // Default deny
+    match /{path=**} {
+      allow read, write: if false;
+    }
+  }
+}
