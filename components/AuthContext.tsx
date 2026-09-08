@@ -18,6 +18,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!supabase) {
+      console.warn("Supabase is not configured. Authentication will be disabled.");
+      setLoading(false);
+      return;
+    }
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
@@ -25,21 +31,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         ensureUserProfile(session.user);
       }
       setLoading(false);
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        ensureUserProfile(session.user);
-      }
+    }).catch((err: any) => {
+      console.error("Failed to get session:", err);
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    // Listen for auth changes
+    let subscription: any;
+    try {
+      const { data } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          ensureUserProfile(session.user);
+        }
+        setLoading(false);
+      });
+      subscription = data.subscription;
+    } catch (e) {
+      console.error("Failed to set auth state listener");
+    }
+
+    return () => {
+      if (subscription) subscription.unsubscribe();
+    };
   }, []);
 
   const ensureUserProfile = async (currentUser: User) => {
+    if (!supabase) return;
     try {
       const { data, error } = await supabase
         .from('users')
@@ -61,6 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signInWithGoogle = async () => {
+    if (!supabase) throw new Error("Supabase is not configured.");
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -76,6 +95,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const login = async (identifier: string, password: string, isEmail: boolean) => {
+    if (!supabase) throw new Error("Supabase is not configured.");
     try {
       const authOptions: any = { password };
       if (isEmail) {
@@ -92,6 +112,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signup = async (identifier: string, password: string, name: string, isEmail: boolean) => {
+    if (!supabase) throw new Error("Supabase is not configured.");
     try {
       const authOptions: any = { password, options: { data: { full_name: name } } };
       if (isEmail) {
@@ -108,6 +129,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
+    if (!supabase) return;
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;

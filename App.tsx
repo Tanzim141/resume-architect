@@ -3,7 +3,6 @@ import { UserInput, GeneratedResume, AppState } from './types';
 import ResumeForm from './components/ResumeForm';
 import ResumePreview from './components/ResumePreview';
 import Login from './components/Login';
-import ChatBot from './components/ChatBot';
 import { MyResumes } from './components/MyResumes';
 import { generateResumeContent } from './services/geminiService';
 import { Sparkles, AlertCircle, LogOut, User as UserIcon, List, Moon, Sun } from 'lucide-react';
@@ -117,15 +116,15 @@ function AppContent() {
       generatedResult = await generateResumeContent(inputData);
       setResumeData(generatedResult);
       setAppState(AppState.VIEWING);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError("Failed to generate resume. Please ensure all fields contain valid information and try again.");
+      setError(err.message || "Failed to generate resume. Please ensure all fields contain valid information and try again.");
       setAppState(AppState.EDITING);
       return;
     }
 
     // Save to Database if logged in
-    if (user && !isGuest && generatedResult) {
+    if (user && !isGuest && generatedResult && supabase) {
       try {
         if (currentResumeId) {
           const { error: updateError } = await supabase
@@ -298,9 +297,6 @@ function AppContent() {
           <p className="mt-1 text-xs">Developed by Echo Planner</p>
         </div>
       </footer>
-      
-      {/* Global Widgets */}
-      <ChatBot />
     </div>
   );
 }

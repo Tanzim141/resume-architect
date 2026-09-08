@@ -150,6 +150,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, onGuestLogin, onGoogleLogin }) =
       }
 
       const { supabase } = await import('../supabase');
+      if (!supabase) throw new Error("Supabase is not configured.");
       
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(cleanIdentifier, {
         redirectTo: window.location.origin

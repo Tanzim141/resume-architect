@@ -31,6 +31,10 @@ export const MyResumes: React.FC<MyResumesProps> = ({ onLoadResume, onCreateNew,
     }
 
     const fetchResumes = async () => {
+      if (!supabase) {
+         setLoading(false);
+         return;
+      }
       try {
         const { data, error } = await supabase
           .from('resumes')
@@ -63,7 +67,7 @@ export const MyResumes: React.FC<MyResumesProps> = ({ onLoadResume, onCreateNew,
   };
 
   const confirmDelete = async () => {
-    if (!deletingId) return;
+    if (!deletingId || !supabase) return;
     try {
       const { error } = await supabase
         .from('resumes')
