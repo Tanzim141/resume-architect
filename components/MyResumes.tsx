@@ -24,16 +24,20 @@ export const MyResumes: React.FC<MyResumesProps> = ({ onLoadResume, onCreateNew,
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) {
-      setResumes([]);
-      setLoading(false);
-      return;
-    }
+    const currentUserId = user?.id || 'guest';
 
     const fetchResumes = async () => {
-      if (!supabase) {
-         setLoading(false);
-         return;
+      if (!supabase || !user) {
+        try {
+          const storageKey = `resumearchitect_saved_resumes_${currentUserId}`;
+          const raw = localStorage.getItem(storageKey);
+          const localList = raw ? JSON.parse(raw) : [];
+          setResumes(localList);
+        } catch (e) {
+          console.error("Failed to fetch local resumes:", e);
+        }
+        setLoading(false);
+        return;
       }
       try {
         const { data, error } = await supabase
@@ -67,7 +71,20 @@ export const MyResumes: React.FC<MyResumesProps> = ({ onLoadResume, onCreateNew,
   };
 
   const confirmDelete = async () => {
-    if (!deletingId || !supabase) return;
+    if (!deletingId) return;
+    const currentUserId = user?.id || 'guest';
+    if (!supabase || !user) {
+      try {
+        const storageKey = `resumearchitect_saved_resumes_${currentUserId}`;
+        const updated = resumes.filter(r => r.id !== deletingId);
+        localStorage.setItem(storageKey, JSON.stringify(updated));
+        setResumes(updated);
+        setDeletingId(null);
+      } catch (e) {
+        console.error("Failed to delete local resume:", e);
+      }
+      return;
+    }
     try {
       const { error } = await supabase
         .from('resumes')

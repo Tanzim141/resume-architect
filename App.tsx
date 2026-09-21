@@ -5,9 +5,10 @@ import ResumePreview from './components/ResumePreview';
 import Login from './components/Login';
 import { MyResumes } from './components/MyResumes';
 import { generateResumeContent } from './services/geminiService';
-import { Sparkles, AlertCircle, LogOut, User as UserIcon, List, Moon, Sun } from 'lucide-react';
+import { AlertCircle, LogOut, User as UserIcon, List, Moon, Sun } from 'lucide-react';
 import { AuthProvider, useAuth } from './components/AuthContext';
 import { supabase } from './supabase';
+import { Logo } from './components/Logo';
 
 const initialInput: UserInput = {
   templateId: 'classic',
@@ -37,11 +38,11 @@ const initialInput: UserInput = {
 function AppContent() {
   const { user, loading, signInWithGoogle, logout } = useAuth();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [appState, setAppState] = useState<AppState | 'DASHBOARD'>('DASHBOARD');
+  const [appState, setAppState] = useState<AppState | 'DASHBOARD'>(AppState.EDITING);
   const [inputData, setInputData] = useState<UserInput>(initialInput);
   const [resumeData, setResumeData] = useState<GeneratedResume | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isGuest, setIsGuest] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [currentResumeId, setCurrentResumeId] = useState<string | null>(null);
@@ -63,8 +64,7 @@ function AppContent() {
   React.useEffect(() => {
     if (user) {
       setIsAuthenticated(true);
-      setIsGuest(false);
-      setInputData(prev => ({ ...prev, email: user.email || '' }));
+      setInputData(prev => ({ ...prev, email: user.email || prev.email }));
     }
   }, [user]);
 
@@ -78,34 +78,26 @@ function AppContent() {
 
   const handleLogin = (identifier: string, type: 'email' | 'phone') => {
     setIsAuthenticated(true);
-    setIsGuest(false);
+    setShowLoginModal(false);
     setInputData(prev => ({ ...prev, [type]: identifier }));
-    setAppState('DASHBOARD');
   };
 
   const handleGuestLogin = () => {
-    setIsAuthenticated(true);
-    setIsGuest(true);
-    setInputData(initialInput);
+    setIsAuthenticated(false);
+    setShowLoginModal(false);
     setAppState(AppState.EDITING);
   };
 
   const handleGoogleLogin = async () => {
     await signInWithGoogle();
-    setAppState('DASHBOARD');
+    setShowLoginModal(false);
   };
 
   const handleLogout = async () => {
-    if (!isGuest) {
-      await logout();
-    }
+    await logout();
     setIsAuthenticated(false);
-    setIsGuest(false);
-    setAppState('DASHBOARD');
-    setInputData(initialInput);
-    setResumeData(null);
-    setCurrentResumeId(null);
-    setError(null);
+    setShowProfileMenu(false);
+    setAppState(AppState.EDITING);
   };
 
   const handleGenerate = async () => {
@@ -123,37 +115,68 @@ function AppContent() {
       return;
     }
 
-    // Save to Database if logged in
-    if (user && !isGuest && generatedResult && supabase) {
-      try {
-        if (currentResumeId) {
-          const { error: updateError } = await supabase
-            .from('resumes')
-            .update({
-              personalInfo: inputData,
-              resumeData: generatedResult,
-              createdAt: new Date().toISOString()
-            })
-            .eq('id', currentResumeId);
-          if (updateError) throw updateError;
-        } else {
-          const { data, error: insertError } = await supabase
-            .from('resumes')
-            .insert([{
-              uid: user.id,
-              personalInfo: inputData,
-              resumeData: generatedResult,
-              createdAt: new Date().toISOString()
-            }])
-            .select('id')
-            .single();
-          if (insertError) throw insertError;
-          if (data && data.id) {
-            setCurrentResumeId(data.id);
+    // Save to Database (if logged in & supabase connected) or Local Storage (for everyone)
+    if (generatedResult) {
+      const currentUserId = user?.id || 'guest';
+      if (user && supabase) {
+        try {
+          if (currentResumeId) {
+            const { error: updateError } = await supabase
+              .from('resumes')
+              .update({
+                personalInfo: inputData,
+                resumeData: generatedResult,
+                createdAt: new Date().toISOString()
+              })
+              .eq('id', currentResumeId);
+            if (updateError) throw updateError;
+          } else {
+            const { data, error: insertError } = await supabase
+              .from('resumes')
+              .insert([{
+                uid: user.id,
+                personalInfo: inputData,
+                resumeData: generatedResult,
+                createdAt: new Date().toISOString()
+              }])
+              .select('id')
+              .single();
+            if (insertError) throw insertError;
+            if (data && data.id) {
+              setCurrentResumeId(data.id);
+            }
           }
+        } catch (saveErr) {
+          console.error("Failed to save resume to Supabase, saving locally:", saveErr);
         }
-      } catch (saveErr) {
-        console.error("Failed to save resume:", saveErr);
+      }
+
+      // Always update local cache as well
+      try {
+        const storageKey = `resumearchitect_saved_resumes_${currentUserId}`;
+        const raw = localStorage.getItem(storageKey);
+        let list: any[] = raw ? JSON.parse(raw) : [];
+        if (currentResumeId) {
+          list = list.map(item => item.id === currentResumeId ? {
+            ...item,
+            personalInfo: inputData,
+            resumeData: generatedResult,
+            createdAt: new Date().toISOString()
+          } : item);
+        } else {
+          const newId = 'resume_' + Date.now();
+          list.unshift({
+            id: newId,
+            uid: currentUserId,
+            personalInfo: inputData,
+            resumeData: generatedResult,
+            createdAt: new Date().toISOString()
+          });
+          setCurrentResumeId(newId);
+        }
+        localStorage.setItem(storageKey, JSON.stringify(list));
+      } catch (e) {
+        console.error("Failed to save resume locally:", e);
       }
     }
   };
@@ -170,59 +193,56 @@ function AppContent() {
   };
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center bg-gray-50">Loading...</div>;
-  }
-
-  if (!isAuthenticated && !user) {
-    return <Login onLogin={handleLogin} onGuestLogin={handleGuestLogin} onGoogleLogin={handleGoogleLogin} />;
+    return <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-200">Loading...</div>;
   }
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 print:bg-white transition-colors duration-200">
       {/* Navbar - hidden on print */}
-      <nav className="no-print bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 transition-colors duration-200">
+      <nav className="no-print bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40 transition-colors duration-200">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
-            <div className="flex items-center cursor-pointer" onClick={() => setAppState(isGuest ? AppState.EDITING : 'DASHBOARD')}>
-              <Sparkles className="h-8 w-8 text-sky-600 dark:text-sky-400" />
-              <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white tracking-tight">Resume Architect</span>
+            <div className="flex items-center cursor-pointer select-none" onClick={() => setAppState(AppState.EDITING)}>
+              <Logo size="md" />
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 sm:gap-4">
                <button
                  onClick={() => setDarkMode(!darkMode)}
                  className="p-2 text-gray-500 hover:text-sky-600 dark:text-gray-400 dark:hover:text-sky-400 transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+                 title="Toggle Theme"
                >
                  {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
                </button>
-               {!isGuest && (
-                 <button 
-                   onClick={() => setAppState('DASHBOARD')}
-                   className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 hover:text-sky-600 dark:hover:text-sky-400 transition-colors font-medium"
-                 >
-                   <List className="w-4 h-4" />
-                   <span className="hidden sm:inline">My Resumes</span>
-                 </button>
-               )}
-               {isGuest ? (
-                 <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
-                   <UserIcon className="w-4 h-4" /> Guest
-                 </span>
-                ) : (
+
+               <button 
+                 onClick={() => setAppState(appState === 'DASHBOARD' ? (resumeData ? AppState.VIEWING : AppState.EDITING) : 'DASHBOARD')}
+                 className={`flex items-center gap-1.5 sm:gap-2 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors ${
+                   appState === 'DASHBOARD'
+                     ? 'bg-sky-50 text-sky-700 dark:bg-sky-950 dark:text-sky-300'
+                     : 'text-gray-600 dark:text-gray-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                 }`}
+               >
+                 <List className="w-4 h-4" />
+                 <span>My Resumes</span>
+               </button>
+
+               {user ? (
                   <div className="relative" ref={menuRef}>
                     <button 
                       onClick={() => setShowProfileMenu(!showProfileMenu)}
-                      className="text-sm text-sky-700 dark:text-sky-300 font-medium flex items-center gap-2 cursor-pointer"
+                      className="text-sm text-sky-700 dark:text-sky-300 font-medium flex items-center gap-1.5 bg-sky-50 dark:bg-sky-950 px-3 py-1.5 rounded-lg border border-sky-200 dark:border-sky-800 cursor-pointer"
                     >
-                      {user?.user_metadata?.full_name || 'User'}
+                      <UserIcon className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+                      <span className="max-w-[120px] truncate">{user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'My Account'}</span>
                     </button>
                     {showProfileMenu && (
                       <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-2 z-50">
                         <p className="text-xs text-gray-500 dark:text-gray-400 px-2 py-1 truncate">
-                          {user?.email}
+                          {user?.email || user?.phone}
                         </p>
                         <button 
                           onClick={handleLogout}
-                          className="w-full flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 transition-colors font-medium px-2 py-2"
+                          className="w-full flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 transition-colors font-medium px-2 py-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
                         >
                           <LogOut className="w-4 h-4" />
                           Logout
@@ -230,11 +250,32 @@ function AppContent() {
                       </div>
                     )}
                   </div>
+                ) : (
+                  <button 
+                    onClick={() => setShowLoginModal(true)}
+                    className="text-sm font-semibold bg-sky-600 hover:bg-sky-700 text-white px-3.5 py-1.5 rounded-lg transition-colors shadow-sm"
+                  >
+                    Sign In
+                  </button>
                 )}
             </div>
           </div>
         </div>
       </nav>
+
+      {/* Optional Login Modal */}
+      {showLoginModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="w-full max-w-md my-auto">
+            <Login 
+              onLogin={handleLogin} 
+              onGuestLogin={handleGuestLogin} 
+              onGoogleLogin={handleGoogleLogin} 
+              onClose={() => setShowLoginModal(false)}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 print:p-0 print:max-w-none">

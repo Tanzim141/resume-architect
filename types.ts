@@ -13,6 +13,7 @@ export interface EducationInput {
 export interface UserInput {
   templateId: TemplateId;
   photo?: string; // Base64 string for the image
+  showPhotoInClassic?: boolean; // Optional: whether to show photo in Classic ATS
   fullName: string;
   email: string;
   phone: string;
@@ -26,6 +27,9 @@ export interface UserInput {
   experience: string;
   education: EducationInput[];
   projects: string;
+  certifications?: string;
+  achievements?: string;
+  languages?: string;
 }
 
 export interface GeneratedResume {
@@ -56,6 +60,9 @@ export interface GeneratedResume {
     technologies: string[];
     link?: string;
   }[];
+  certifications?: string[];
+  achievements?: string[];
+  languages?: string[];
 }
 
 export enum AppState {

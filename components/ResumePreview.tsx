@@ -137,112 +137,119 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, personalInfo, onEdi
 
   // --- TEMPLATE RENDERERS ---
 
-  // 1. Classic ATS Template
-  const ClassicTemplate = () => (
-    <>
-      <header className="border-b-2 border-sky-200 pb-6 mb-6 flex items-start gap-6">
-        <div className="shrink-0 w-20 h-20 bg-sky-800 rounded-xl flex items-center justify-center shadow-lg border border-sky-700 overflow-hidden print:bg-sky-800 print:border-none">
-          {personalInfo.photo ? (
-            <img src={personalInfo.photo} className="w-full h-full object-cover" alt="Profile" referrerPolicy="no-referrer" />
-          ) : (
-            <span className="text-4xl font-serif font-bold text-white print:text-white">
-              {personalInfo.fullName ? personalInfo.fullName.trim().charAt(0).toUpperCase() : 'R'}
-            </span>
-          )}
-        </div>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-4xl font-serif font-bold tracking-tight text-sky-800 uppercase mb-2 leading-none pt-1">
-            {personalInfo.fullName}
-          </h1>
-          <p className="text-xl text-sky-600 font-medium mb-4">{personalInfo.jobTitle}</p>
-          <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-gray-600">
-            {personalInfo.email && <a href={`mailto:${personalInfo.email}`} className="flex items-center gap-1.5 hover:text-sky-800 transition-colors"><Mail className="w-3.5 h-3.5 text-sky-500" /><span>{personalInfo.email}</span></a>}
-            {personalInfo.phone && <a href={`tel:${personalInfo.phone}`} className="flex items-center gap-1.5 hover:text-sky-800 transition-colors"><Phone className="w-3.5 h-3.5 text-sky-500" /><span>{personalInfo.phone}</span></a>}
-            {personalInfo.linkedin && <a href={ensureAbsoluteUrl(personalInfo.linkedin)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-sky-800 transition-colors"><LinkIcon className="w-3.5 h-3.5 text-sky-500" /><span className="text-sky-600 underline decoration-sky-300 underline-offset-2">{personalInfo.linkedin}</span></a>}
-            {personalInfo.github && <a href={ensureAbsoluteUrl(personalInfo.github)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-sky-800 transition-colors"><Github className="w-3.5 h-3.5 text-sky-500" /><span>{personalInfo.github}</span></a>}
-            {personalInfo.website && <a href={ensureAbsoluteUrl(personalInfo.website)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-sky-800 transition-colors"><Globe className="w-3.5 h-3.5 text-sky-500" /><span>{personalInfo.website}</span></a>}
-            {personalInfo.customLinks?.map((link) => (
-              <a href={ensureAbsoluteUrl(link.url)} key={link.id} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-sky-800 transition-colors"><LinkIcon className="w-3.5 h-3.5 text-sky-500" /><span>{link.url}</span></a>
-            ))}
-          </div>
-        </div>
-      </header>
-      <div className="space-y-6">
-        <section>
-          <h2 className="text-sm font-bold text-sky-700 uppercase tracking-wider border-b border-sky-200 pb-1 mb-3">Professional Summary</h2>
-          <p className="text-sm leading-relaxed text-gray-700 text-justify">{data.professionalSummary}</p>
-        </section>
-        <section>
-          <h2 className="text-sm font-bold text-sky-700 uppercase tracking-wider border-b border-sky-200 pb-1 mb-3">Technical Skills</h2>
-          <div className="grid grid-cols-1 gap-2">
-            {data.skills.map((skillGroup, idx) => (
-              <div key={idx} className="flex flex-col sm:flex-row text-sm avoid-break">
-                <span className="font-semibold text-sky-700 w-32 shrink-0">{skillGroup.category}:</span>
-                <span className="text-gray-700">{skillGroup.items.join(', ')}</span>
+  // 1. Classic ATS Template (Clean single-column, highest ATS compatibility, photo hidden by default)
+  const ClassicTemplate = () => {
+    const showPhoto = Boolean(personalInfo.showPhotoInClassic && personalInfo.photo);
+
+    return (
+      <div className="text-gray-900 font-sans">
+        <header className="border-b-2 border-sky-200 pb-5 mb-6">
+          <div className="flex items-start gap-6">
+            {showPhoto && (
+              <div className="shrink-0 w-20 h-20 bg-sky-800 rounded-xl flex items-center justify-center shadow-md border border-sky-700 overflow-hidden print:bg-sky-800 print:border-none">
+                <img src={personalInfo.photo} className="w-full h-full object-cover" alt="Profile" referrerPolicy="no-referrer" />
               </div>
-            ))}
-          </div>
-        </section>
-        <section>
-          <h2 className="text-sm font-bold text-sky-700 uppercase tracking-wider border-b border-sky-200 pb-1 mb-3">Professional Experience</h2>
-          <div className="space-y-5">
-            {data.workExperience.map((job, idx) => (
-              <div key={idx} className="avoid-break">
-                <div className="flex justify-between items-baseline mb-1">
-                  <h3 className="font-bold text-gray-900 text-base">{job.role}</h3>
-                  <span className="text-sm text-sky-600 font-medium italic">{job.duration}</span>
-                </div>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-semibold text-gray-700">{job.company}</span>
-                  <span className="text-xs text-gray-500">{job.location}</span>
-                </div>
-                <ul className="list-disc list-outside ml-4 space-y-1 marker:text-sky-500">
-                  {job.points.map((point, pIdx) => <li key={pIdx} className="text-sm text-gray-700 pl-1 leading-snug">{point}</li>)}
-                </ul>
+            )}
+            <div className="flex-1 min-w-0">
+              <h1 className="text-4xl font-serif font-bold tracking-tight text-sky-800 uppercase mb-2 leading-none pt-1">
+                {personalInfo.fullName}
+              </h1>
+              <p className="text-xl text-sky-600 font-medium mb-3">{personalInfo.jobTitle}</p>
+              <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-sm text-gray-600">
+                {personalInfo.email && <a href={`mailto:${personalInfo.email}`} className="flex items-center gap-1.5 hover:text-sky-800 transition-colors"><Mail className="w-3.5 h-3.5 text-sky-500" /><span>{personalInfo.email}</span></a>}
+                {personalInfo.phone && <a href={`tel:${personalInfo.phone}`} className="flex items-center gap-1.5 hover:text-sky-800 transition-colors"><Phone className="w-3.5 h-3.5 text-sky-500" /><span>{personalInfo.phone}</span></a>}
+                {personalInfo.linkedin && <a href={ensureAbsoluteUrl(personalInfo.linkedin)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-sky-800 transition-colors"><Linkedin className="w-3.5 h-3.5 text-sky-500" /><span className="text-sky-600 underline decoration-sky-300 underline-offset-2">{personalInfo.linkedin}</span></a>}
+                {personalInfo.github && <a href={ensureAbsoluteUrl(personalInfo.github)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-sky-800 transition-colors"><Github className="w-3.5 h-3.5 text-sky-500" /><span>{personalInfo.github}</span></a>}
+                {personalInfo.website && <a href={ensureAbsoluteUrl(personalInfo.website)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-sky-800 transition-colors"><Globe className="w-3.5 h-3.5 text-sky-500" /><span>{personalInfo.website}</span></a>}
+                {personalInfo.customLinks?.map((link) => (
+                  <a href={ensureAbsoluteUrl(link.url)} key={link.id} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-sky-800 transition-colors"><LinkIcon className="w-3.5 h-3.5 text-sky-500" /><span>{link.url}</span></a>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
-        </section>
-        {data.projects && data.projects.length > 0 && (
+        </header>
+
+        <div className="space-y-6">
           <section>
-            <h2 className="text-sm font-bold text-sky-700 uppercase tracking-wider border-b border-sky-200 pb-1 mb-3">Key Projects</h2>
-            <div className="space-y-4">
-              {data.projects.map((project, idx) => (
-                <div key={idx} className="avoid-break">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-bold text-gray-900 text-sm">{project.name}</h3>
-                    {project.technologies && <span className="text-xs text-sky-600 bg-sky-50 px-2 py-0.5 rounded">{project.technologies.join(' • ')}</span>}
-                  </div>
-                  <p className="text-sm text-gray-700 leading-snug">{project.description}</p>
+            <h2 className="text-sm font-bold text-sky-700 uppercase tracking-wider border-b border-sky-200 pb-1 mb-3">Professional Summary</h2>
+            <p className="text-sm leading-relaxed text-gray-700 text-justify">{data.professionalSummary}</p>
+          </section>
+          
+          <section>
+            <h2 className="text-sm font-bold text-sky-700 uppercase tracking-wider border-b border-sky-200 pb-1 mb-3">Technical Skills</h2>
+            <div className="grid grid-cols-1 gap-2">
+              {data.skills.map((skillGroup, idx) => (
+                <div key={idx} className="flex flex-col sm:flex-row text-sm avoid-break">
+                  <span className="font-semibold text-sky-700 w-32 shrink-0">{skillGroup.category}:</span>
+                  <span className="text-gray-700">{skillGroup.items.join(', ')}</span>
                 </div>
               ))}
             </div>
           </section>
-        )}
-        <section>
-          <h2 className="text-sm font-bold text-sky-700 uppercase tracking-wider border-b border-sky-200 pb-1 mb-3">Education</h2>
-          <div className="space-y-3">
-            {data.education.map((edu, idx) => (
-              <div key={idx} className="flex justify-between avoid-break">
-                <div>
-                  <h3 className="font-bold text-gray-900 text-sm">{edu.institution}</h3>
-                  <div className="text-sm text-gray-700">{edu.degree}</div>
-                  {edu.cgpa && <div className="text-sm text-gray-700 font-medium mt-0.5">{edu.scoreType || 'CGPA'}: {edu.cgpa}</div>}
-                  {edu.details && <p className="text-xs text-gray-500 mt-0.5">{edu.details}</p>}
-                </div>
-                <div className="text-right">
-                  <span className="block text-sm font-medium text-gray-900">{edu.year}</span>
-                  <span className="block text-xs text-gray-500">{edu.location}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      </div>
-    </>
-  );
 
-  // 2. Modern 2-Column Template
+          <section>
+            <h2 className="text-sm font-bold text-sky-700 uppercase tracking-wider border-b border-sky-200 pb-1 mb-3">Professional Experience</h2>
+            <div className="space-y-5">
+              {data.workExperience.map((job, idx) => (
+                <div key={idx} className="avoid-break">
+                  <div className="flex justify-between items-baseline mb-1">
+                    <h3 className="font-bold text-gray-900 text-base">{job.role}</h3>
+                    <span className="text-sm text-sky-600 font-medium italic">{job.duration}</span>
+                  </div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-semibold text-gray-700">{job.company}</span>
+                    <span className="text-xs text-gray-500">{job.location}</span>
+                  </div>
+                  <ul className="list-disc list-outside ml-4 space-y-1 marker:text-sky-500">
+                    {job.points.map((point, pIdx) => <li key={pIdx} className="text-sm text-gray-700 pl-1 leading-snug">{point}</li>)}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {data.projects && data.projects.length > 0 && (
+            <section>
+              <h2 className="text-sm font-bold text-sky-700 uppercase tracking-wider border-b border-sky-200 pb-1 mb-3">Key Projects</h2>
+              <div className="space-y-4">
+                {data.projects.map((project, idx) => (
+                  <div key={idx} className="avoid-break">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-bold text-gray-900 text-sm">{project.name}</h3>
+                      {project.technologies && <span className="text-xs text-sky-600 bg-sky-50 px-2 py-0.5 rounded">{project.technologies.join(' • ')}</span>}
+                    </div>
+                    <p className="text-sm text-gray-700 leading-snug">{project.description}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          <section>
+            <h2 className="text-sm font-bold text-sky-700 uppercase tracking-wider border-b border-sky-200 pb-1 mb-3">Education</h2>
+            <div className="space-y-3">
+              {data.education.map((edu, idx) => (
+                <div key={idx} className="flex justify-between avoid-break">
+                  <div>
+                    <h3 className="font-bold text-gray-900 text-sm">{edu.institution}</h3>
+                    <div className="text-sm text-gray-700">{edu.degree}</div>
+                    {edu.cgpa && <div className="text-sm text-gray-700 font-medium mt-0.5">{edu.scoreType || 'CGPA'}: {edu.cgpa}</div>}
+                    {edu.details && <p className="text-xs text-gray-500 mt-0.5">{edu.details}</p>}
+                  </div>
+                  <div className="text-right">
+                    <span className="block text-sm font-medium text-gray-900">{edu.year}</span>
+                    <span className="block text-xs text-gray-500">{edu.location}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      </div>
+    );
+  };
+
+  // 2. Modern Professional (2-Column Balanced Layout)
   const ModernTemplate = () => (
     <div className="min-h-full flex flex-col bg-white text-slate-800 font-sans">
        {/* Header */}

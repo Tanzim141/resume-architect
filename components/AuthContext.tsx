@@ -13,18 +13,63 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Local Storage Fallback Helpers
+const LOCAL_USERS_KEY = 'resumearchitect_local_users';
+const LOCAL_SESSION_KEY = 'resumearchitect_local_session';
+
+const getLocalUsers = (): Array<{ id: string; identifier: string; password: string; name: string; isEmail: boolean }> => {
+  try {
+    const raw = localStorage.getItem(LOCAL_USERS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+};
+
+const saveLocalUsers = (users: any[]) => {
+  try {
+    localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(users));
+  } catch (e) {
+    console.error("Failed to save local users:", e);
+  }
+};
+
+const getLocalSession = (): User | null => {
+  try {
+    const raw = localStorage.getItem(LOCAL_SESSION_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+const setLocalSession = (user: User | null) => {
+  try {
+    if (user) {
+      localStorage.setItem(LOCAL_SESSION_KEY, JSON.stringify(user));
+    } else {
+      localStorage.removeItem(LOCAL_SESSION_KEY);
+    }
+  } catch (e) {
+    console.error("Failed to update local session:", e);
+  }
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!supabase) {
-      console.warn("Supabase is not configured. Authentication will be disabled.");
+      const savedUser = getLocalSession();
+      if (savedUser) {
+        setUser(savedUser);
+      }
       setLoading(false);
       return;
     }
 
-    // Get initial session
+    // Get initial session with Supabase
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -32,7 +77,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       setLoading(false);
     }).catch((err: any) => {
-      console.error("Failed to get session:", err);
+      console.error("Failed to get session from Supabase, falling back to local session:", err);
+      const savedUser = getLocalSession();
+      if (savedUser) {
+        setUser(savedUser);
+      }
       setLoading(false);
     });
 
@@ -79,7 +128,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signInWithGoogle = async () => {
-    if (!supabase) throw new Error("Supabase is not configured.");
+    if (!supabase) {
+      const localUser: any = {
+        id: 'local_google_user',
+        email: 'user@example.com',
+        user_metadata: {
+          full_name: 'Google User',
+          name: 'Google User'
+        }
+      };
+      setUser(localUser);
+      setLocalSession(localUser);
+      return;
+    }
+
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -95,7 +157,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const login = async (identifier: string, password: string, isEmail: boolean) => {
-    if (!supabase) throw new Error("Supabase is not configured.");
+    if (!supabase) {
+      const localUsers = getLocalUsers();
+      const existing = localUsers.find(u => u.identifier.toLowerCase() === identifier.toLowerCase());
+      if (!existing) {
+        throw new Error("No account found with this email/phone. Please create an account first.");
+      }
+      if (existing.password !== password) {
+        throw new Error("Invalid password. Please check your credentials.");
+      }
+      const localUser: any = {
+        id: existing.id,
+        email: isEmail ? identifier : `${identifier}@local.resumearchitect.com`,
+        phone: !isEmail ? identifier : undefined,
+        user_metadata: {
+          full_name: existing.name || 'User',
+          name: existing.name || 'User'
+        }
+      };
+      setUser(localUser);
+      setLocalSession(localUser);
+      return;
+    }
+
     try {
       const authOptions: any = { password };
       if (isEmail) {
@@ -112,7 +196,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signup = async (identifier: string, password: string, name: string, isEmail: boolean) => {
-    if (!supabase) throw new Error("Supabase is not configured.");
+    if (!supabase) {
+      const localUsers = getLocalUsers();
+      const existing = localUsers.find(u => u.identifier.toLowerCase() === identifier.toLowerCase());
+      if (existing) {
+        throw new Error("An account already exists with this email/phone. Please log in.");
+      }
+      const newId = 'local_user_' + Date.now();
+      const newUserRecord = {
+        id: newId,
+        identifier,
+        password,
+        name,
+        isEmail
+      };
+      localUsers.push(newUserRecord);
+      saveLocalUsers(localUsers);
+
+      const localUser: any = {
+        id: newId,
+        email: isEmail ? identifier : `${identifier}@local.resumearchitect.com`,
+        phone: !isEmail ? identifier : undefined,
+        user_metadata: {
+          full_name: name,
+          name: name
+        }
+      };
+      setUser(localUser);
+      setLocalSession(localUser);
+      return;
+    }
+
     try {
       const authOptions: any = { password, options: { data: { full_name: name } } };
       if (isEmail) {
@@ -129,13 +243,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
-    if (!supabase) return;
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-    } catch (error) {
-      console.error("Error signing out", error);
-      throw error;
+    setLocalSession(null);
+    setUser(null);
+    if (supabase) {
+      try {
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
+      } catch (error) {
+        console.error("Error signing out from Supabase", error);
+      }
     }
   };
 

@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
-import { Sparkles, LogIn, User, KeyRound, ArrowLeft, CheckCircle, UserPlus, Eye, EyeOff } from 'lucide-react';
+import { LogIn, User, KeyRound, ArrowLeft, CheckCircle, UserPlus, Eye, EyeOff, X } from 'lucide-react';
 import { useAuth } from './AuthContext';
+import { Logo } from './Logo';
 
 interface LoginProps {
   onLogin: (identifier: string, type: 'email' | 'phone') => void;
   onGuestLogin: () => void;
   onGoogleLogin: () => Promise<void>;
+  onClose?: () => void;
 }
 
-const Login: React.FC<LoginProps> = ({ onLogin, onGuestLogin, onGoogleLogin }) => {
+const Login: React.FC<LoginProps> = ({ onLogin, onGuestLogin, onGoogleLogin, onClose }) => {
   const { login, signup } = useAuth();
   const [view, setView] = useState<'login' | 'signup' | 'forgot-password'>('login');
   
@@ -150,7 +152,12 @@ const Login: React.FC<LoginProps> = ({ onLogin, onGuestLogin, onGoogleLogin }) =
       }
 
       const { supabase } = await import('../supabase');
-      if (!supabase) throw new Error("Supabase is not configured.");
+      if (!supabase) {
+        // Local mode password reset notification
+        setResetStatus('success');
+        setError('');
+        return;
+      }
       
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(cleanIdentifier, {
         redirectTo: window.location.origin
@@ -273,7 +280,16 @@ const Login: React.FC<LoginProps> = ({ onLogin, onGuestLogin, onGoogleLogin }) =
   if (view === 'signup') {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 transition-colors duration-200">
-        <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 sm:p-8 border border-gray-100 dark:border-gray-700">
+        <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 sm:p-8 border border-gray-100 dark:border-gray-700 relative">
+          {onClose && (
+            <button 
+              onClick={onClose}
+              className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              title="Close"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
           <div className="text-center mb-6 sm:mb-8">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Create Account</h2>
             <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 mt-2">Join Resume Architect today</p>
@@ -379,12 +395,19 @@ const Login: React.FC<LoginProps> = ({ onLogin, onGuestLogin, onGoogleLogin }) =
   // ----------------------------------------------------------------------
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 transition-colors duration-200">
-      <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 sm:p-8 border border-gray-100 dark:border-gray-700">
+      <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 sm:p-8 border border-gray-100 dark:border-gray-700 relative">
+        {onClose && (
+          <button 
+            onClick={onClose}
+            className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            title="Close"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
         <div className="text-center mb-6 sm:mb-8">
           <div className="flex justify-center mb-4">
-            <div className="bg-sky-100 p-2.5 sm:p-3 rounded-full">
-              <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-sky-600" />
-            </div>
+            <Logo size="lg" showText={false} />
           </div>
           <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Welcome Back</h2>
           <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 mt-2">Sign in to Resume Architect to start building</p>

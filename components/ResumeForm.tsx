@@ -169,10 +169,28 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ input, setInput, onGenerate, is
   // Generate years for dropdown (1990 - 2050)
   const years = Array.from({ length: 2050 - 1990 + 1 }, (_, i) => 2050 - i);
 
-  const templates: { id: TemplateId; name: string; desc: string }[] = [
-    { id: 'classic', name: 'Classic ATS', desc: 'Clean, text-focused, best for parsing.' },
-    { id: 'modern', name: 'Modern Columns', desc: 'Split layout, sleek and professional.' },
-    { id: 'creative', name: '3D Creative', desc: 'Visual profile with photo & depth.' },
+  const templates: { id: TemplateId; name: string; desc: string; badge: string; badgeColor: string }[] = [
+    { 
+      id: 'classic', 
+      name: 'Classic ATS', 
+      desc: 'Clean, text-focused and optimized for ATS parsing.',
+      badge: 'ATS Optimized',
+      badgeColor: 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300'
+    },
+    { 
+      id: 'modern', 
+      name: 'Modern Professional', 
+      desc: 'Balanced, sleek and professional.',
+      badge: 'Professional',
+      badgeColor: 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-200'
+    },
+    { 
+      id: 'creative', 
+      name: '3D Creative', 
+      desc: 'Visual, modern and creative.',
+      badge: 'Creative',
+      badgeColor: 'bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-300'
+    },
   ];
   
   return (
@@ -196,17 +214,25 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ input, setInput, onGenerate, is
               <div
                 key={t.id}
                 onClick={() => handleChange('templateId', t.id)}
-                className={`p-4 rounded-lg border-2 text-left transition-all cursor-pointer ${
+                className={`p-4 rounded-lg border-2 text-left transition-all cursor-pointer relative flex flex-col justify-between ${
                   input.templateId === t.id
                     ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20 ring-1 ring-sky-500'
                     : 'border-gray-200 dark:border-gray-700 hover:border-sky-200 dark:hover:border-sky-700 hover:bg-gray-50 dark:hover:bg-gray-750'
                 }`}
               >
-                <div className="font-bold text-gray-900 dark:text-white">{t.name}</div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t.desc}</div>
-                <div className="flex justify-between items-center mt-3">
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <span className="font-bold text-gray-900 dark:text-white text-base">{t.name}</span>
+                    <span className={`text-[11px] font-semibold px-2 py-0.5 rounded ${t.badgeColor} shrink-0`}>
+                      {t.badge}
+                    </span>
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{t.desc}</div>
+                </div>
+                
+                <div className="flex justify-between items-center mt-4 pt-2 border-t border-gray-100 dark:border-gray-700/60">
                   {input.templateId === t.id ? (
-                    <div className="text-xs font-semibold text-sky-600 dark:text-sky-400 flex items-center gap-1">
+                    <div className="text-xs font-semibold text-sky-600 dark:text-sky-400 flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-sky-600 dark:bg-sky-400"></span> Selected
                     </div>
                   ) : <div />}
@@ -215,7 +241,7 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ input, setInput, onGenerate, is
                       e.stopPropagation();
                       setPreviewTemplate(t.id);
                     }}
-                    className="text-xs text-sky-600 dark:text-sky-400 hover:text-sky-800 dark:hover:text-sky-300 flex items-center gap-1 font-medium bg-sky-50 dark:bg-sky-900/30 px-2 py-1 rounded border border-sky-100 dark:border-sky-800 transition-colors"
+                    className="text-xs text-sky-600 dark:text-sky-400 hover:text-sky-800 dark:hover:text-sky-300 flex items-center gap-1 font-medium bg-sky-50 dark:bg-sky-900/30 px-2.5 py-1 rounded border border-sky-100 dark:border-sky-800 transition-colors"
                   >
                     <Eye className="w-3 h-3" /> Preview
                   </button>
@@ -234,33 +260,53 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ input, setInput, onGenerate, is
           </h3>
           
           <div className="mb-6 bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-             <div className="flex items-center gap-4">
-                <div className="h-16 w-16 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden flex items-center justify-center border border-gray-300 dark:border-gray-600">
+             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <div className="h-16 w-16 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden flex items-center justify-center border border-gray-300 dark:border-gray-600 shrink-0">
                   {input.photo ? (
                     <img src={input.photo} alt="Profile" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
                   ) : (
                     <ImageIcon className="w-8 h-8 text-gray-400 dark:text-gray-500" />
                   )}
                 </div>
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Profile Photo {input.templateId === 'creative' ? '(Recommended)' : '(Optional)'}
-                  </label>
-                  <div className="flex gap-2">
-                    <label className="cursor-pointer bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 px-3 py-1.5 rounded text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
-                      Upload Image
-                      <input type="file" className="hidden" accept="image/*" onChange={handlePhotoUpload} />
+                <div className="flex-1 space-y-2">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Profile Photo <span className="text-gray-400 font-normal">(Optional)</span>
                     </label>
-                    {input.photo && (
-                      <button 
-                        onClick={removePhoto}
-                        className="text-red-500 hover:text-red-700 text-sm font-medium px-2"
-                      >
-                        Remove
-                      </button>
-                    )}
+                    <div className="flex items-center gap-2">
+                      <label className="cursor-pointer bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 px-3 py-1.5 rounded text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors shadow-sm">
+                        Upload Image
+                        <input type="file" className="hidden" accept="image/*" onChange={handlePhotoUpload} />
+                      </label>
+                      {input.photo && (
+                        <button 
+                          onClick={removePhoto}
+                          className="text-red-500 hover:text-red-700 dark:hover:text-red-400 text-sm font-medium px-2 py-1"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Recommended for Creative/3D templates</p>
+
+                  {input.photo && (
+                    <div className="flex items-center gap-2 pt-1">
+                      <input 
+                        type="checkbox"
+                        id="showPhotoInClassic"
+                        checked={input.showPhotoInClassic || false}
+                        onChange={(e) => handleChange('showPhotoInClassic', e.target.checked)}
+                        className="rounded border-gray-300 text-sky-600 focus:ring-sky-500 w-4 h-4"
+                      />
+                      <label htmlFor="showPhotoInClassic" className="text-xs text-gray-600 dark:text-gray-300 cursor-pointer">
+                        Show Photo in Classic ATS <span className="text-gray-400">(Hidden by default for ATS optimization)</span>
+                      </label>
+                    </div>
+                  )}
+
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Photo is enabled automatically on Modern Professional & 3D Creative, and hidden on Classic ATS unless enabled.
+                  </p>
                 </div>
              </div>
           </div>
