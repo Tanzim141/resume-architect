@@ -195,14 +195,14 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ input, setInput, onGenerate, is
   
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-colors duration-200">
-      <div className="bg-sky-600 p-6 text-white">
-        <h2 className="text-2xl font-bold flex items-center gap-2">
-          <FileText className="w-6 h-6" /> Resume Builder
+      <div className="bg-sky-600 p-4 sm:p-6 text-white">
+        <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+          <FileText className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" /> Resume Builder
         </h2>
-        <p className="text-sky-50 mt-2">Enter your raw details, and our AI will structure and polish them into a professional resume.</p>
+        <p className="text-sky-50 text-xs sm:text-sm mt-1 sm:mt-2">Enter your raw details, and our AI will structure and polish them into a professional resume.</p>
       </div>
 
-      <div className="p-6 space-y-8">
+      <div className="p-4 sm:p-6 space-y-6 sm:space-y-8">
         
         {/* Template Selection */}
         <section>

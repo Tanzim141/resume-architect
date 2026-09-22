@@ -200,40 +200,42 @@ function AppContent() {
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 print:bg-white transition-colors duration-200">
       {/* Navbar - hidden on print */}
       <nav className="no-print bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40 transition-colors duration-200">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
+        <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-14 sm:h-16">
             <div className="flex items-center cursor-pointer select-none" onClick={() => setAppState(AppState.EDITING)}>
               <Logo size="md" />
             </div>
-            <div className="flex items-center gap-3 sm:gap-4">
+            <div className="flex items-center gap-1.5 sm:gap-3">
                <button
                  onClick={() => setDarkMode(!darkMode)}
-                 className="p-2 text-gray-500 hover:text-sky-600 dark:text-gray-400 dark:hover:text-sky-400 transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+                 className="p-1.5 sm:p-2 text-gray-500 hover:text-sky-600 dark:text-gray-400 dark:hover:text-sky-400 transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
                  title="Toggle Theme"
                >
-                 {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                 {darkMode ? <Sun className="w-4 h-4 sm:w-5 sm:h-5" /> : <Moon className="w-4 h-4 sm:w-5 sm:h-5" />}
                </button>
 
                <button 
                  onClick={() => setAppState(appState === 'DASHBOARD' ? (resumeData ? AppState.VIEWING : AppState.EDITING) : 'DASHBOARD')}
-                 className={`flex items-center gap-1.5 sm:gap-2 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors ${
+                 className={`flex items-center gap-1 sm:gap-2 text-xs sm:text-sm font-medium px-2 sm:px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap ${
                    appState === 'DASHBOARD'
                      ? 'bg-sky-50 text-sky-700 dark:bg-sky-950 dark:text-sky-300'
-                     : 'text-gray-600 dark:text-gray-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                     : 'text-gray-600 dark:text-gray-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-gray-50 dark:hover:bg-gray-750'
                  }`}
+                 title="My Resumes"
                >
-                 <List className="w-4 h-4" />
-                 <span>My Resumes</span>
+                 <List className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                 <span className="hidden sm:inline">My Resumes</span>
+                 <span className="sm:hidden text-xs">Resumes</span>
                </button>
 
                {user ? (
                   <div className="relative" ref={menuRef}>
                     <button 
                       onClick={() => setShowProfileMenu(!showProfileMenu)}
-                      className="text-sm text-sky-700 dark:text-sky-300 font-medium flex items-center gap-1.5 bg-sky-50 dark:bg-sky-950 px-3 py-1.5 rounded-lg border border-sky-200 dark:border-sky-800 cursor-pointer"
+                      className="text-xs sm:text-sm text-sky-700 dark:text-sky-300 font-medium flex items-center gap-1 sm:gap-1.5 bg-sky-50 dark:bg-sky-950 px-2 sm:px-3 py-1.5 rounded-lg border border-sky-200 dark:border-sky-800 cursor-pointer"
                     >
-                      <UserIcon className="w-4 h-4 text-sky-600 dark:text-sky-400" />
-                      <span className="max-w-[120px] truncate">{user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'My Account'}</span>
+                      <UserIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-600 dark:text-sky-400 shrink-0" />
+                      <span className="max-w-[75px] sm:max-w-[120px] truncate">{user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Account'}</span>
                     </button>
                     {showProfileMenu && (
                       <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-2 z-50">
@@ -253,7 +255,7 @@ function AppContent() {
                 ) : (
                   <button 
                     onClick={() => setShowLoginModal(true)}
-                    className="text-sm font-semibold bg-sky-600 hover:bg-sky-700 text-white px-3.5 py-1.5 rounded-lg transition-colors shadow-sm"
+                    className="text-xs sm:text-sm font-semibold bg-sky-600 hover:bg-sky-700 text-white px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-colors shadow-sm whitespace-nowrap"
                   >
                     Sign In
                   </button>
@@ -278,14 +280,14 @@ function AppContent() {
       )}
 
       {/* Main Content */}
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 print:p-0 print:max-w-none">
+      <main className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 print:p-0 print:max-w-none">
         
         {error && (
-          <div className="no-print mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3 text-red-700">
+          <div className="no-print mb-4 sm:mb-6 p-3.5 sm:p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3 text-red-700">
             <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
             <div>
-              <h4 className="font-semibold">Error</h4>
-              <p className="text-sm">{error}</p>
+              <h4 className="font-semibold text-sm sm:text-base">Error</h4>
+              <p className="text-xs sm:text-sm">{error}</p>
             </div>
           </div>
         )}
@@ -303,11 +305,11 @@ function AppContent() {
           />
         ) : appState === AppState.EDITING || appState === AppState.GENERATING ? (
           <div className="max-w-3xl mx-auto animate-in fade-in duration-500">
-            <div className="mb-6 text-center">
-              <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white sm:text-4xl">
+            <div className="mb-4 sm:mb-6 text-center px-2">
+              <h1 className="text-2xl sm:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">
                 Build your perfect resume
               </h1>
-              <p className="mt-3 text-lg text-gray-500 dark:text-gray-400">
+              <p className="mt-1.5 sm:mt-2 text-xs sm:text-base text-gray-600 dark:text-gray-400 max-w-xl mx-auto">
                 Choose a template, enter your details, and let AI structure your professional story.
               </p>
             </div>

@@ -117,20 +117,20 @@ export const MyResumes: React.FC<MyResumesProps> = ({ onLoadResume, onCreateNew,
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="flex justify-between items-center mb-8">
-        <div className="flex items-center gap-4">
+    <div className="max-w-4xl mx-auto p-3 sm:p-6">
+      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+        <div className="flex items-center gap-3 sm:gap-4">
           <button 
              onClick={onBack}
-             className="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
+             className="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors p-1"
           >
              <ArrowLeft className="w-5 h-5" />
           </button>
-          <h2 className="text-2xl font-bold text-slate-800 dark:text-white">My Resumes</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white">My Resumes</h2>
         </div>
         <button
           onClick={onCreateNew}
-          className="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+          className="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg text-sm sm:text-base font-semibold transition-colors shadow-sm text-center"
         >
           Create New Resume
         </button>

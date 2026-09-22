@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { GeneratedResume, UserInput } from '../types';
-import { Mail, Phone, Link as LinkIcon, Download, ArrowLeft, FileText, Loader2, Github, Globe, Linkedin } from 'lucide-react';
+import { Mail, Phone, Link as LinkIcon, Download, ArrowLeft, FileText, Loader2, Github, Globe, Linkedin, ZoomIn, ZoomOut, Maximize2, RotateCcw } from 'lucide-react';
 import { handleDownloadDocx } from '../utils/docxExport';
 
 interface ResumePreviewProps {
@@ -26,6 +26,27 @@ const ensureAbsoluteUrl = (url: string) => {
 
 const ResumePreview: React.FC<ResumePreviewProps> = ({ data, personalInfo, onEdit, hideActions }) => {
   const [isDownloading, setIsDownloading] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState<number | 'fit'>('fit');
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState<number>(800);
+
+  useEffect(() => {
+    const updateWidth = () => {
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.clientWidth);
+      }
+    };
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
+    return () => window.removeEventListener('resize', updateWidth);
+  }, []);
+
+  // 210mm in pixels at standard 96dpi is ~794px
+  const A4_WIDTH_PX = 794;
+  const A4_HEIGHT_PX = 1123;
+  
+  const fitScale = Math.max(0.38, Math.min(1.0, (containerWidth - (containerWidth < 640 ? 16 : 48)) / A4_WIDTH_PX));
+  const activeScale = zoomLevel === 'fit' ? fitScale : zoomLevel;
 
   const handleDownloadPdf = async () => {
     setIsDownloading(true);
@@ -488,52 +509,124 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, personalInfo, onEdi
   );
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4 sm:gap-6">
       {/* Actions Bar */}
       {!hideActions && (
-        <div className="no-print bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4 sticky top-4 z-10">
+        <div className="no-print bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-4 sticky top-16 z-30 transition-colors">
           <button 
             onClick={onEdit}
-            className="flex items-center gap-2 text-gray-600 hover:text-sky-600 font-medium transition-colors self-start sm:self-center"
+            className="flex items-center justify-center sm:justify-start gap-2 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:text-sky-600 dark:hover:text-sky-400 transition-colors py-1.5 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
           >
             <ArrowLeft className="w-4 h-4" /> Back to Editor
           </button>
           
-          <div className="flex gap-3 w-full sm:w-auto">
+          <div className="grid grid-cols-3 sm:flex gap-2 sm:gap-3 w-full sm:w-auto">
             <button 
               onClick={handleDownloadTxt}
-              className="flex-1 sm:flex-none bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors shadow-sm whitespace-nowrap"
+              className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+              title="Download as Plain Text"
             >
-              <FileText className="w-4 h-4" /> Download Text
+              <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500 dark:text-slate-400 shrink-0" />
+              <span className="truncate">Text</span>
             </button>
             <button 
               onClick={() => handleDownloadDocx(personalInfo, data)}
-              className="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors shadow-sm whitespace-nowrap"
+              className="bg-indigo-600 hover:bg-indigo-500 text-white px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+              title="Download Microsoft Word (.docx)"
             >
-              <Download className="w-4 h-4" /> Download DOCX
+              <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+              <span className="truncate">DOCX</span>
             </button>
             <button 
               onClick={handleDownloadPdf}
               disabled={isDownloading}
-              className="flex-1 sm:flex-none bg-sky-600 hover:bg-sky-500 text-white px-6 py-2 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors shadow-sm whitespace-nowrap disabled:opacity-70 disabled:cursor-not-allowed"
+              className="bg-sky-600 hover:bg-sky-500 text-white px-3 sm:px-6 py-2 rounded-lg text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
+              title="Download High Resolution PDF"
             >
               {isDownloading ? (
-                 <Loader2 className="w-4 h-4 animate-spin" />
+                 <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin shrink-0" />
               ) : (
-                 <Download className="w-4 h-4" />
+                 <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
               )}
-              {isDownloading ? 'Generating...' : 'Download PDF'}
+              <span className="truncate">{isDownloading ? 'Generating...' : 'PDF'}</span>
             </button>
           </div>
         </div>
       )}
 
+      {/* Zoom / Viewport Toolbar on Mobile & Desktop */}
+      <div className="no-print flex items-center justify-between bg-white dark:bg-gray-800 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <span className="font-medium text-gray-500 dark:text-gray-400">Scale:</span>
+          <span className="font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950 px-2 py-0.5 rounded">
+            {zoomLevel === 'fit' ? `Fit (${Math.round(activeScale * 100)}%)` : `${Math.round(activeScale * 100)}%`}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1 sm:gap-1.5">
+          <button
+            onClick={() => setZoomLevel('fit')}
+            className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+              zoomLevel === 'fit' 
+                ? 'bg-sky-600 text-white shadow-xs' 
+                : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+            }`}
+            title="Fit to Screen Width"
+          >
+            Fit Width
+          </button>
+          <button
+            onClick={() => setZoomLevel(1.0)}
+            className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+              zoomLevel === 1.0 
+                ? 'bg-sky-600 text-white shadow-xs' 
+                : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+            }`}
+            title="100% Actual Size"
+          >
+            100%
+          </button>
+          <div className="h-4 w-px bg-gray-200 dark:bg-gray-700 mx-1" />
+          <button
+            onClick={() => {
+              const current = typeof zoomLevel === 'number' ? zoomLevel : activeScale;
+              setZoomLevel(Math.max(0.4, Number((current - 0.1).toFixed(2))));
+            }}
+            className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-700 dark:text-gray-300 transition-colors"
+            title="Zoom Out"
+          >
+            <ZoomOut className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={() => {
+              const current = typeof zoomLevel === 'number' ? zoomLevel : activeScale;
+              setZoomLevel(Math.min(1.5, Number((current + 0.1).toFixed(2))));
+            }}
+            className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-700 dark:text-gray-300 transition-colors"
+            title="Zoom In"
+          >
+            <ZoomIn className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+
       {/* Resume Document Wrapper for Responsive View */}
-      <div className="w-full flex justify-center overflow-x-auto p-4 sm:p-8 bg-gray-100 rounded-xl">
-        <div className="resume-scale-wrapper origin-top relative" style={{ width: '210mm' }}>
+      <div 
+        ref={containerRef}
+        className="w-full flex justify-center overflow-x-auto p-2 sm:p-6 bg-slate-100 dark:bg-slate-900/70 rounded-xl border border-gray-200 dark:border-gray-800"
+      >
+        <div 
+          className="resume-preview-scalable origin-top transition-transform duration-150"
+          style={{ 
+            width: '210mm',
+            transform: `scale(${activeScale})`,
+            height: `${Math.round(A4_HEIGHT_PX * activeScale)}px`,
+            marginBottom: '1rem'
+          }}
+        >
             <div 
               id="resume-preview-content"
-              className="print-container bg-white text-gray-900 shadow-xl w-[210mm] min-h-[297mm] box-border print:shadow-none print:w-auto overflow-hidden"
+              className="print-container bg-white text-gray-900 shadow-xl w-[210mm] min-h-[297mm] box-border print:shadow-none print:w-auto overflow-hidden rounded-xs"
               style={{
                 ...(personalInfo.templateId === 'classic' ? { padding: '2cm' } : 
                     personalInfo.templateId === 'creative' ? { padding: '0' } : 
@@ -552,24 +645,13 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, personalInfo, onEdi
           page-break-inside: avoid !important;
           break-inside: avoid !important;
         }
-        .resume-scale-wrapper {
-          transform: scale(0.45);
-          height: calc(297mm * 0.45);
-        }
-        @media (min-width: 480px) {
-          .resume-scale-wrapper { transform: scale(0.6); height: calc(297mm * 0.6); }
-        }
-        @media (min-width: 640px) {
-          .resume-scale-wrapper { transform: scale(0.7); height: calc(297mm * 0.7); }
-        }
-        @media (min-width: 768px) {
-          .resume-scale-wrapper { transform: scale(0.85); height: calc(297mm * 0.85); }
-        }
-        @media (min-width: 1024px) {
-          .resume-scale-wrapper { transform: scale(1); height: auto; }
-        }
         @media print {
-          .resume-scale-wrapper { transform: none !important; height: auto !important; width: 100% !important; margin: 0 !important; }
+          .resume-preview-scalable { 
+            transform: none !important; 
+            height: auto !important; 
+            width: 100% !important; 
+            margin: 0 !important; 
+          }
         }
       `}</style>
     </div>
