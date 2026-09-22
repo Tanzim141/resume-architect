@@ -214,34 +214,39 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ input, setInput, onGenerate, is
               <div
                 key={t.id}
                 onClick={() => handleChange('templateId', t.id)}
-                className={`p-4 rounded-lg border-2 text-left transition-all cursor-pointer relative flex flex-col justify-between ${
+                className={`p-3.5 sm:p-4 rounded-xl border-2 text-left transition-all cursor-pointer relative flex flex-col justify-between ${
                   input.templateId === t.id
-                    ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20 ring-1 ring-sky-500'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-sky-200 dark:hover:border-sky-700 hover:bg-gray-50 dark:hover:bg-gray-750'
+                    ? 'border-sky-500 bg-sky-50/70 dark:bg-sky-900/20 ring-1 ring-sky-500'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-sky-200 dark:hover:border-sky-700 hover:bg-gray-50/60 dark:hover:bg-gray-750'
                 }`}
               >
                 <div>
-                  <div className="flex items-center justify-between gap-2 mb-1.5">
-                    <span className="font-bold text-gray-900 dark:text-white text-base">{t.name}</span>
-                    <span className={`text-[11px] font-semibold px-2 py-0.5 rounded ${t.badgeColor} shrink-0`}>
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="font-bold text-gray-900 dark:text-white text-sm sm:text-base">{t.name}</span>
+                    <span className={`text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded ${t.badgeColor} shrink-0`}>
                       {t.badge}
                     </span>
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{t.desc}</div>
                 </div>
                 
-                <div className="flex justify-between items-center mt-4 pt-2 border-t border-gray-100 dark:border-gray-700/60">
+                <div className="flex justify-between items-center mt-3 pt-2 border-t border-gray-100 dark:border-gray-700/60">
                   {input.templateId === t.id ? (
                     <div className="text-xs font-semibold text-sky-600 dark:text-sky-400 flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-sky-600 dark:bg-sky-400"></span> Selected
                     </div>
-                  ) : <div />}
+                  ) : (
+                    <div className="text-xs text-gray-400 dark:text-gray-500 font-normal">
+                      Tap to select
+                    </div>
+                  )}
                   <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       setPreviewTemplate(t.id);
                     }}
-                    className="text-xs text-sky-600 dark:text-sky-400 hover:text-sky-800 dark:hover:text-sky-300 flex items-center gap-1 font-medium bg-sky-50 dark:bg-sky-900/30 px-2.5 py-1 rounded border border-sky-100 dark:border-sky-800 transition-colors"
+                    className="text-xs text-sky-600 dark:text-sky-400 hover:text-sky-800 dark:hover:text-sky-300 flex items-center gap-1 font-medium bg-white dark:bg-gray-700 hover:bg-sky-50 dark:hover:bg-sky-900/30 px-2.5 py-1 rounded-md border border-sky-200 dark:border-sky-800 transition-colors shadow-xs"
                   >
                     <Eye className="w-3 h-3" /> Preview
                   </button>
@@ -362,7 +367,7 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ input, setInput, onGenerate, is
                 value={input.phone}
                 onChange={(e) => handleChange('phone', e.target.value)}
                 className={inputClasses}
-                placeholder="+1 234 567 890"
+                placeholder="+1 234 567 8900"
               />
             </div>
             <div className="space-y-1">

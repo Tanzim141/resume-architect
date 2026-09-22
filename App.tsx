@@ -12,16 +12,16 @@ import { Logo } from './components/Logo';
 
 const initialInput: UserInput = {
   templateId: 'classic',
-  photo: 'https://api.dicebear.com/7.x/micah/svg?seed=Alex&backgroundColor=transparent',
-  fullName: 'Alex Morgan',
-  email: 'alex.morgan@example.com',
-  phone: '+1 234 567 8900',
-  linkedin: 'linkedin.com/in/alexmorgan',
-  github: 'github.com/alexmorgan',
-  website: 'alexmorgan.dev',
+  photo: '',
+  fullName: '',
+  email: '',
+  phone: '',
+  linkedin: '',
+  github: '',
+  website: '',
   customLinks: [],
-  jobTitle: 'Senior Software Engineer',
-  experienceLevel: 'Mid Level',
+  jobTitle: '',
+  experienceLevel: 'Entry Level',
   skills: '',
   experience: '',
   education: [{
@@ -199,43 +199,43 @@ function AppContent() {
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 print:bg-white transition-colors duration-200">
       {/* Navbar - hidden on print */}
-      <nav className="no-print bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40 transition-colors duration-200">
-        <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-14 sm:h-16">
-            <div className="flex items-center cursor-pointer select-none" onClick={() => setAppState(AppState.EDITING)}>
+      <nav className="no-print bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40 transition-colors duration-200 w-full">
+        <div className="max-w-5xl mx-auto px-2.5 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-14 sm:h-16 gap-1">
+            <div className="flex items-center cursor-pointer select-none shrink min-w-0 pr-1" onClick={() => setAppState(AppState.EDITING)}>
               <Logo size="md" />
             </div>
-            <div className="flex items-center gap-1.5 sm:gap-3">
+            <div className="flex items-center gap-1 sm:gap-2.5 shrink-0">
                <button
                  onClick={() => setDarkMode(!darkMode)}
-                 className="p-1.5 sm:p-2 text-gray-500 hover:text-sky-600 dark:text-gray-400 dark:hover:text-sky-400 transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+                 className="p-1.5 text-gray-500 hover:text-sky-600 dark:text-gray-400 dark:hover:text-sky-400 transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 shrink-0"
                  title="Toggle Theme"
+                 aria-label="Toggle Theme"
                >
                  {darkMode ? <Sun className="w-4 h-4 sm:w-5 sm:h-5" /> : <Moon className="w-4 h-4 sm:w-5 sm:h-5" />}
                </button>
 
                <button 
                  onClick={() => setAppState(appState === 'DASHBOARD' ? (resumeData ? AppState.VIEWING : AppState.EDITING) : 'DASHBOARD')}
-                 className={`flex items-center gap-1 sm:gap-2 text-xs sm:text-sm font-medium px-2 sm:px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap ${
+                 className={`flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm font-medium p-1.5 sm:px-3 sm:py-1.5 rounded-lg transition-colors whitespace-nowrap shrink-0 ${
                    appState === 'DASHBOARD'
                      ? 'bg-sky-50 text-sky-700 dark:bg-sky-950 dark:text-sky-300'
                      : 'text-gray-600 dark:text-gray-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-gray-50 dark:hover:bg-gray-750'
                  }`}
                  title="My Resumes"
                >
-                 <List className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                 <List className="w-4 h-4 shrink-0" />
                  <span className="hidden sm:inline">My Resumes</span>
-                 <span className="sm:hidden text-xs">Resumes</span>
                </button>
 
                {user ? (
-                  <div className="relative" ref={menuRef}>
+                  <div className="relative shrink-0" ref={menuRef}>
                     <button 
                       onClick={() => setShowProfileMenu(!showProfileMenu)}
-                      className="text-xs sm:text-sm text-sky-700 dark:text-sky-300 font-medium flex items-center gap-1 sm:gap-1.5 bg-sky-50 dark:bg-sky-950 px-2 sm:px-3 py-1.5 rounded-lg border border-sky-200 dark:border-sky-800 cursor-pointer"
+                      className="text-xs sm:text-sm text-sky-700 dark:text-sky-300 font-medium flex items-center gap-1 bg-sky-50 dark:bg-sky-950 p-1.5 sm:px-3 sm:py-1.5 rounded-lg border border-sky-200 dark:border-sky-800 cursor-pointer shrink-0"
                     >
-                      <UserIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-600 dark:text-sky-400 shrink-0" />
-                      <span className="max-w-[75px] sm:max-w-[120px] truncate">{user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Account'}</span>
+                      <UserIcon className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0" />
+                      <span className="max-w-[70px] sm:max-w-[120px] truncate hidden xs:inline">{user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Account'}</span>
                     </button>
                     {showProfileMenu && (
                       <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-2 z-50">
@@ -255,7 +255,7 @@ function AppContent() {
                 ) : (
                   <button 
                     onClick={() => setShowLoginModal(true)}
-                    className="text-xs sm:text-sm font-semibold bg-sky-600 hover:bg-sky-700 text-white px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-colors shadow-sm whitespace-nowrap"
+                    className="text-xs sm:text-sm font-semibold bg-sky-600 hover:bg-sky-700 text-white px-2.5 sm:px-3.5 py-1.5 rounded-lg transition-colors shadow-xs whitespace-nowrap shrink-0"
                   >
                     Sign In
                   </button>
