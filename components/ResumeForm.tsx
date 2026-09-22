@@ -12,19 +12,20 @@ interface ResumeFormProps {
 
 const dummyInput: UserInput = {
   templateId: 'classic',
-  fullName: 'John Smith',
+  fullName: 'Alex Morgan',
   jobTitle: 'Senior Software Engineer',
-  email: 'john.smith@example.com',
+  email: 'alex.morgan@example.com',
   phone: '+1 234 567 8900',
-  linkedin: 'linkedin.com/in/johnsmith',
-  github: 'github.com/johnsmith',
-  website: 'johnsmith.dev',
+  linkedin: 'linkedin.com/in/alexmorgan',
+  github: 'github.com/alexmorgan',
+  website: 'alexmorgan.dev',
   experienceLevel: 'Senior Level',
   skills: '',
   experience: '',
   education: [],
   projects: '',
-  photo: 'https://api.dicebear.com/7.x/micah/svg?seed=John&backgroundColor=transparent'
+  showPhotoInClassic: true,
+  photo: 'https://api.dicebear.com/7.x/micah/svg?seed=Alex&backgroundColor=transparent'
 };
 
 const dummyData: GeneratedResume = {
@@ -299,18 +300,18 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ input, setInput, onGenerate, is
                       <input 
                         type="checkbox"
                         id="showPhotoInClassic"
-                        checked={input.showPhotoInClassic || false}
+                        checked={input.showPhotoInClassic !== false}
                         onChange={(e) => handleChange('showPhotoInClassic', e.target.checked)}
                         className="rounded border-gray-300 text-sky-600 focus:ring-sky-500 w-4 h-4"
                       />
                       <label htmlFor="showPhotoInClassic" className="text-xs text-gray-600 dark:text-gray-300 cursor-pointer">
-                        Show Photo in Classic ATS <span className="text-gray-400">(Hidden by default for ATS optimization)</span>
+                        Include Photo in Resume Templates
                       </label>
                     </div>
                   )}
 
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Photo is enabled automatically on Modern Professional & 3D Creative, and hidden on Classic ATS unless enabled.
+                    Profile photo will be displayed in Classic ATS, Modern Professional, and 3D Creative templates.
                   </p>
                 </div>
              </div>
@@ -642,7 +643,12 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ input, setInput, onGenerate, is
               <div className="transform origin-top w-full max-w-[21cm]">
                 <ResumePreview 
                   data={dummyData} 
-                  personalInfo={{ ...dummyInput, templateId: previewTemplate }} 
+                  personalInfo={{ 
+                    ...dummyInput, 
+                    photo: input.photo || dummyInput.photo,
+                    showPhotoInClassic: true,
+                    templateId: previewTemplate 
+                  }} 
                   onEdit={() => {}} 
                   hideActions={true} 
                 />

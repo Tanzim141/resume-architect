@@ -158,16 +158,16 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ data, personalInfo, onEdi
 
   // --- TEMPLATE RENDERERS ---
 
-  // 1. Classic ATS Template (Clean single-column, highest ATS compatibility, photo hidden by default)
+  // 1. Classic ATS Template (Clean single-column, highest ATS compatibility, with photo support)
   const ClassicTemplate = () => {
-    const showPhoto = Boolean(personalInfo.showPhotoInClassic && personalInfo.photo);
+    const showPhoto = Boolean(personalInfo.photo && personalInfo.showPhotoInClassic !== false);
 
     return (
       <div className="text-gray-900 font-sans">
         <header className="border-b-2 border-sky-200 pb-5 mb-6">
-          <div className="flex items-start gap-6">
+          <div className="flex items-start gap-5">
             {showPhoto && (
-              <div className="shrink-0 w-20 h-20 bg-sky-800 rounded-xl flex items-center justify-center shadow-md border border-sky-700 overflow-hidden print:bg-sky-800 print:border-none">
+              <div className="shrink-0 w-20 h-20 bg-sky-50 dark:bg-slate-800 rounded-xl flex items-center justify-center shadow-xs border-2 border-sky-100 dark:border-slate-700 overflow-hidden print:bg-white print:border-sky-300">
                 <img src={personalInfo.photo} className="w-full h-full object-cover" alt="Profile" referrerPolicy="no-referrer" />
               </div>
             )}

@@ -13,6 +13,7 @@ import { Logo } from './components/Logo';
 const initialInput: UserInput = {
   templateId: 'classic',
   photo: 'https://api.dicebear.com/7.x/micah/svg?seed=Alex&backgroundColor=transparent',
+  showPhotoInClassic: true,
   fullName: '',
   email: '',
   phone: '',
