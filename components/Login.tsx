@@ -200,76 +200,81 @@ const Login: React.FC<LoginProps> = ({ onLogin, onGuestLogin, onGoogleLogin, onC
   // ----------------------------------------------------------------------
   if (view === 'forgot-password') {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 transition-colors duration-200">
-        <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 sm:p-8 border border-gray-100 dark:border-gray-700 relative">
+      <div className="w-full max-w-[380px] mx-auto bg-white dark:bg-slate-800 rounded-2xl shadow-xl shadow-slate-900/10 p-5 sm:p-6 border border-slate-200/90 dark:border-slate-700 relative animate-in fade-in zoom-in-95 duration-200">
+        <button 
+          onClick={() => switchView('login')}
+          className="absolute top-4 left-4 p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+          title="Back"
+        >
+          <ArrowLeft className="w-4 h-4" />
+        </button>
+
+        {onClose && (
           <button 
-            onClick={() => switchView('login')}
-            className="absolute top-6 left-6 text-gray-400 hover:text-gray-600 transition-colors"
+            onClick={onClose}
+            className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            title="Close"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
+        )}
 
-          <div className="text-center mb-8 mt-2">
-            <div className="flex justify-center mb-4">
-              <div className="bg-sky-100 p-3 rounded-full">
-                <KeyRound className="h-8 w-8 text-sky-600" />
-              </div>
+        <div className="text-center mb-5 mt-1">
+          <div className="flex justify-center mb-2.5">
+            <div className="bg-sky-50 dark:bg-sky-950/60 p-2.5 rounded-xl border border-sky-100 dark:border-sky-900/50">
+              <KeyRound className="h-5 w-5 text-sky-600 dark:text-sky-400" />
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Reset Password</h2>
-            <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 mt-2">
-              {resetStatus === 'success' 
-                ? 'Check your inbox for instructions' 
-                : 'Enter your email to receive reset instructions'}
-            </p>
           </div>
-
-          {resetStatus === 'success' ? (
-            <div className="text-center space-y-6">
-              <div className="bg-green-50 text-green-700 p-4 rounded-lg flex items-center justify-center gap-2">
-                <CheckCircle className="w-5 h-5" />
-                <span className="font-medium">Reset link sent successfully!</span>
-              </div>
-              <button
-                onClick={() => switchView('login')}
-                className="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
-              >
-                Back to Login
-              </button>
-            </div>
-          ) : (
-            <form onSubmit={handleForgotPassword} className="space-y-6">
-              <div>
-                <label htmlFor="resetInput" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Email or Mobile Number
-                </label>
-                <input
-                  type="text"
-                  id="resetInput"
-                  value={resetIdentifier}
-                  onChange={(e) => {
-                    setResetIdentifier(e.target.value);
-                    setError('');
-                  }}
-                  className="w-full px-3 py-2.5 sm:px-4 sm:py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                  placeholder="Enter your email or phone"
-                />
-                {error && <p className="mt-2 text-sm text-red-600 whitespace-pre-line">{error}</p>}
-              </div>
-
-              <button
-                type="submit"
-                disabled={resetStatus === 'sending'}
-                className="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2.5 sm:py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-70"
-              >
-                {resetStatus === 'sending' ? (
-                  <>Sending...</>
-                ) : (
-                  <>Send Reset Link</>
-                )}
-              </button>
-            </form>
-          )}
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white">Reset Password</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            {resetStatus === 'success' 
+              ? 'Check your inbox for instructions' 
+              : 'Enter your email to receive reset link'}
+          </p>
         </div>
+
+        {resetStatus === 'success' ? (
+          <div className="text-center space-y-4">
+            <div className="bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 p-3 rounded-lg flex items-center justify-center gap-2 text-xs font-medium border border-emerald-200/60 dark:border-emerald-800/40">
+              <CheckCircle className="w-4 h-4 shrink-0" />
+              <span>Reset link sent to your email!</span>
+            </div>
+            <button
+              onClick={() => switchView('login')}
+              className="w-full bg-sky-600 hover:bg-sky-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition-colors shadow-xs"
+            >
+              Back to Login
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleForgotPassword} className="space-y-3.5">
+            <div>
+              <label htmlFor="resetInput" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                Email Address
+              </label>
+              <input
+                type="email"
+                id="resetInput"
+                value={resetIdentifier}
+                onChange={(e) => {
+                  setResetIdentifier(e.target.value);
+                  setError('');
+                }}
+                className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all bg-slate-50/50 dark:bg-slate-700/50 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500"
+                placeholder="name@example.com"
+              />
+              {error && <p className="mt-1.5 text-xs text-rose-600 whitespace-pre-line">{error}</p>}
+            </div>
+
+            <button
+              type="submit"
+              disabled={resetStatus === 'sending'}
+              className="w-full bg-sky-600 hover:bg-sky-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition-colors flex items-center justify-center gap-2 shadow-xs disabled:opacity-70"
+            >
+              {resetStatus === 'sending' ? 'Sending link...' : 'Send Reset Link'}
+            </button>
+          </form>
+        )}
       </div>
     );
   }
@@ -279,112 +284,114 @@ const Login: React.FC<LoginProps> = ({ onLogin, onGuestLogin, onGoogleLogin, onC
   // ----------------------------------------------------------------------
   if (view === 'signup') {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 transition-colors duration-200">
-        <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 sm:p-8 border border-gray-100 dark:border-gray-700 relative">
-          {onClose && (
-            <button 
-              onClick={onClose}
-              className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              title="Close"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          )}
-          <div className="text-center mb-6 sm:mb-8">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Create Account</h2>
-            <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 mt-2">Join Resume Architect today</p>
+      <div className="w-full max-w-[380px] mx-auto bg-white dark:bg-slate-800 rounded-2xl shadow-xl shadow-slate-900/10 p-5 sm:p-6 border border-slate-200/90 dark:border-slate-700 relative animate-in fade-in zoom-in-95 duration-200">
+        {onClose && (
+          <button 
+            onClick={onClose}
+            className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            title="Close"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
+
+        <div className="text-center mb-4">
+          <div className="flex justify-center mb-2">
+            <Logo size="sm" showText={false} />
+          </div>
+          <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">Create Account</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Start building your professional resume</p>
+        </div>
+
+        <form onSubmit={handleSignupSubmit} className="space-y-3">
+          <div>
+            <label htmlFor="signupName" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              Full Name
+            </label>
+            <input
+              type="text"
+              id="signupName"
+              value={signupName}
+              onChange={(e) => {
+                setSignupName(e.target.value);
+                setError('');
+              }}
+              className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all bg-slate-50/50 dark:bg-slate-700/50 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500"
+              placeholder="e.g. Alex Morgan"
+            />
           </div>
 
-          <form onSubmit={handleSignupSubmit} className="space-y-4 sm:space-y-5">
-            <div>
-              <label htmlFor="signupName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Full Name
-              </label>
+          <div>
+            <label htmlFor="signupIdentifier" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              Email or Mobile
+            </label>
+            <input
+              type="text"
+              id="signupIdentifier"
+              value={signupIdentifier}
+              onChange={(e) => {
+                setSignupIdentifier(e.target.value);
+                setError('');
+              }}
+              className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all bg-slate-50/50 dark:bg-slate-700/50 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500"
+              placeholder="name@example.com"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="signupPassword" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              Password
+            </label>
+            <div className="relative">
               <input
-                type="text"
-                id="signupName"
-                value={signupName}
+                type={showPassword ? "text" : "password"}
+                id="signupPassword"
+                value={signupPassword}
                 onChange={(e) => {
-                  setSignupName(e.target.value);
+                  setSignupPassword(e.target.value);
                   setError('');
                 }}
-                className="w-full px-3 py-2.5 sm:px-4 sm:py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                placeholder="Enter your full name"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all bg-slate-50/50 dark:bg-slate-700/50 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 pr-9"
+                placeholder="At least 6 characters"
               />
-            </div>
-
-            <div>
-              <label htmlFor="signupIdentifier" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Email or Mobile Number
-              </label>
-              <input
-                type="text"
-                id="signupIdentifier"
-                value={signupIdentifier}
-                onChange={(e) => {
-                  setSignupIdentifier(e.target.value);
-                  setError('');
-                }}
-                className="w-full px-3 py-2.5 sm:px-4 sm:py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                placeholder="Enter your email or phone"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="signupPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  id="signupPassword"
-                  value={signupPassword}
-                  onChange={(e) => {
-                    setSignupPassword(e.target.value);
-                    setError('');
-                  }}
-                  className="w-full px-3 py-2.5 sm:px-4 sm:py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 pr-10"
-                  placeholder="Create a password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-            </div>
-
-            {error && <p className="text-sm text-red-600 bg-red-50 p-2 rounded border border-red-100 whitespace-pre-line">{error}</p>}
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2.5 sm:py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 mt-2 disabled:opacity-70"
-            >
-              {isLoading ? (
-                <>Loading...</>
-              ) : (
-                <>
-                  <UserPlus className="w-5 h-5" />
-                  Sign Up
-                </>
-              )}
-            </button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Already have an account?{' '}
               <button
-                onClick={() => switchView('login')}
-                className="text-sky-600 hover:text-sky-700 font-semibold"
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
               >
-                Log In
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
-            </p>
+            </div>
           </div>
+
+          {error && <p className="text-xs text-rose-600 bg-rose-50 dark:bg-rose-950/40 p-2 rounded-lg border border-rose-200 dark:border-rose-800 whitespace-pre-line">{error}</p>}
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors flex items-center justify-center gap-1.5 shadow-xs disabled:opacity-70 mt-1"
+          >
+            {isLoading ? (
+              'Creating account...'
+            ) : (
+              <>
+                <UserPlus className="w-4 h-4" />
+                Sign Up
+              </>
+            )}
+          </button>
+        </form>
+
+        <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/60 text-center">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Already have an account?{' '}
+            <button
+              onClick={() => switchView('login')}
+              className="text-sky-600 hover:text-sky-700 dark:text-sky-400 font-semibold"
+            >
+              Log In
+            </button>
+          </p>
         </div>
       </div>
     );
@@ -394,147 +401,147 @@ const Login: React.FC<LoginProps> = ({ onLogin, onGuestLogin, onGoogleLogin, onC
   // VIEW: LOGIN
   // ----------------------------------------------------------------------
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 transition-colors duration-200">
-      <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 sm:p-8 border border-gray-100 dark:border-gray-700 relative">
-        {onClose && (
-          <button 
-            onClick={onClose}
-            className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            title="Close"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        )}
-        <div className="text-center mb-6 sm:mb-8">
-          <div className="flex justify-center mb-4">
-            <Logo size="lg" showText={false} />
-          </div>
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Welcome Back</h2>
-          <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 mt-2">Sign in to Resume Architect to start building</p>
+    <div className="w-full max-w-[380px] mx-auto bg-white dark:bg-slate-800 rounded-2xl shadow-xl shadow-slate-900/10 p-5 sm:p-6 border border-slate-200/90 dark:border-slate-700 relative animate-in fade-in zoom-in-95 duration-200">
+      {onClose && (
+        <button 
+          onClick={onClose}
+          className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+          title="Close"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      )}
+
+      <div className="text-center mb-4">
+        <div className="flex justify-center mb-2">
+          <Logo size="sm" showText={false} />
+        </div>
+        <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">Welcome Back</h2>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Sign in to Resume Architect</p>
+      </div>
+
+      <form onSubmit={handleLoginSubmit} className="space-y-3">
+        <div>
+          <label htmlFor="identifier" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            Email or Mobile Number
+          </label>
+          <input
+            type="text"
+            id="identifier"
+            value={identifier}
+            onChange={(e) => {
+              setIdentifier(e.target.value);
+              setError('');
+            }}
+            className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all bg-slate-50/50 dark:bg-slate-700/50 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500"
+            placeholder="Enter your email or phone"
+          />
         </div>
 
-        <form onSubmit={handleLoginSubmit} className="space-y-4 sm:space-y-5">
-          <div>
-            <label htmlFor="identifier" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Email or Mobile Number
+        <div>
+          <div className="flex justify-between items-center mb-1">
+            <label htmlFor="password" className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+              Password
             </label>
+            <button
+              type="button"
+              onClick={() => switchView('forgot-password')}
+              className="text-xs text-sky-600 dark:text-sky-400 hover:text-sky-700 font-medium"
+            >
+              Forgot?
+            </button>
+          </div>
+          <div className="relative">
             <input
-              type="text"
-              id="identifier"
-              value={identifier}
+              type={showPassword ? "text" : "password"}
+              id="password"
+              value={password}
               onChange={(e) => {
-                setIdentifier(e.target.value);
+                setPassword(e.target.value);
                 setError('');
               }}
-              className="w-full px-3 py-2.5 sm:px-4 sm:py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-              placeholder="Enter your email or phone"
+              className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all bg-slate-50/50 dark:bg-slate-700/50 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 pr-9"
+              placeholder="Enter your password"
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+            >
+              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
           </div>
+        </div>
 
-          <div>
-            <div className="flex justify-between items-center mb-1">
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Password
-              </label>
-              <button
-                type="button"
-                onClick={() => switchView('forgot-password')}
-                className="text-xs sm:text-sm text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 font-medium"
-              >
-                Forgot Password?
-              </button>
-            </div>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                id="password"
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  setError('');
-                }}
-                className="w-full px-3 py-2.5 sm:px-4 sm:py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 pr-10"
-                placeholder="Enter your password"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
-            </div>
+        {error && <p className="text-xs text-rose-600 bg-rose-50 dark:bg-rose-950/40 p-2 rounded-lg border border-rose-200 dark:border-rose-800 whitespace-pre-line">{error}</p>}
+
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors flex items-center justify-center gap-1.5 shadow-xs disabled:opacity-70 mt-1"
+        >
+          {isLoading ? (
+            'Logging in...'
+          ) : (
+            <>
+              <LogIn className="w-4 h-4" />
+              Login
+            </>
+          )}
+        </button>
+
+        <div className="relative my-2.5">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-slate-200 dark:border-slate-700"></div>
           </div>
+          <div className="relative flex justify-center text-[11px]">
+            <span className="px-2 bg-white dark:bg-slate-800 text-slate-400">Or continue with</span>
+          </div>
+        </div>
 
-          {error && <p className="text-sm text-red-600 bg-red-50 p-2 rounded border border-red-100 whitespace-pre-line">{error}</p>}
-
+        {/* Side-by-side compact social buttons */}
+        <div className="grid grid-cols-2 gap-2">
           <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2.5 sm:py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 mt-2 disabled:opacity-70"
+            type="button"
+            onClick={async () => {
+              try {
+                await onGoogleLogin();
+              } catch (err) {
+                setError('Failed to sign in with Google');
+              }
+            }}
+            className="w-full bg-white dark:bg-slate-700/60 border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium py-1.5 px-3 rounded-lg transition-colors flex items-center justify-center gap-1.5 text-xs shadow-xs"
           >
-            {isLoading ? (
-              <>Loading...</>
-            ) : (
-              <>
-                <LogIn className="w-5 h-5" />
-                Login
-              </>
-            )}
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+            </svg>
+            Google
           </button>
+          <button
+            type="button"
+            onClick={onGuestLogin}
+            className="w-full bg-white dark:bg-slate-700/60 border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium py-1.5 px-3 rounded-lg transition-colors flex items-center justify-center gap-1.5 text-xs shadow-xs"
+          >
+            <User className="w-3.5 h-3.5 text-slate-500" />
+            Guest
+          </button>
+        </div>
+      </form>
 
-          <div className="mt-4 text-center">
-             <p className="text-sm text-gray-600">
-              Don't have an account?{' '}
-              <button
-                type="button"
-                onClick={() => switchView('signup')}
-                className="text-sky-600 hover:text-sky-700 font-semibold"
-              >
-                Sign Up
-              </button>
-            </p>
-          </div>
-
-          <div className="relative py-2">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200 dark:border-gray-600"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">Or continue with</span>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2.5 sm:gap-3">
-            <button
-              type="button"
-              onClick={async () => {
-                try {
-                  await onGoogleLogin();
-                } catch (err) {
-                  setError('Failed to sign in with Google');
-                }
-              }}
-              className="w-full bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-semibold py-2.5 sm:py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
-            >
-              <svg className="w-5 h-5" viewBox="0 0 24 24">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-              </svg>
-              Google
-            </button>
-            <button
-              type="button"
-              onClick={onGuestLogin}
-              className="w-full bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-semibold py-2.5 sm:py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
-            >
-              <User className="w-5 h-5" />
-              Guest
-            </button>
-          </div>
-        </form>
+      <div className="mt-3.5 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 text-center">
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          Don't have an account?{' '}
+          <button
+            type="button"
+            onClick={() => switchView('signup')}
+            className="text-sky-600 hover:text-sky-700 dark:text-sky-400 font-semibold"
+          >
+            Sign Up
+          </button>
+        </p>
       </div>
     </div>
   );

@@ -12,19 +12,19 @@ interface ResumeFormProps {
 
 const dummyInput: UserInput = {
   templateId: 'classic',
-  fullName: 'Alex Morgan',
+  fullName: 'John Smith',
   jobTitle: 'Senior Software Engineer',
-  email: 'alex.morgan@example.com',
+  email: 'john.smith@example.com',
   phone: '+1 234 567 8900',
-  linkedin: 'linkedin.com/in/alexmorgan',
-  github: 'github.com/alexmorgan',
-  website: 'alexmorgan.dev',
+  linkedin: 'linkedin.com/in/johnsmith',
+  github: 'github.com/johnsmith',
+  website: 'johnsmith.dev',
   experienceLevel: 'Senior Level',
   skills: '',
   experience: '',
   education: [],
   projects: '',
-  photo: 'https://api.dicebear.com/7.x/micah/svg?seed=Alex&backgroundColor=transparent'
+  photo: 'https://api.dicebear.com/7.x/micah/svg?seed=John&backgroundColor=transparent'
 };
 
 const dummyData: GeneratedResume = {
@@ -324,7 +324,7 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ input, setInput, onGenerate, is
                 value={input.fullName}
                 onChange={(e) => handleChange('fullName', e.target.value)}
                 className={inputClasses}
-                placeholder="Alex Morgan"
+                placeholder="e.g. John Smith"
               />
             </div>
             <div className="space-y-1">
@@ -334,7 +334,7 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ input, setInput, onGenerate, is
                 value={input.jobTitle}
                 onChange={(e) => handleChange('jobTitle', e.target.value)}
                 className={inputClasses}
-                placeholder="Senior Software Engineer"
+                placeholder="e.g. Software Engineer"
               />
             </div>
              <div className="space-y-1">
@@ -357,7 +357,7 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ input, setInput, onGenerate, is
                 value={input.email}
                 onChange={(e) => handleChange('email', e.target.value)}
                 className={inputClasses}
-                placeholder="alex.morgan@example.com"
+                placeholder="john.smith@example.com"
               />
             </div>
             <div className="space-y-1">
@@ -377,7 +377,7 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ input, setInput, onGenerate, is
                 value={input.linkedin}
                 onChange={(e) => handleChange('linkedin', e.target.value)}
                 className={inputClasses}
-                placeholder="linkedin.com/in/alexmorgan"
+                placeholder="linkedin.com/in/johnsmith"
               />
             </div>
             <div className="space-y-1">
@@ -389,7 +389,7 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ input, setInput, onGenerate, is
                 value={input.github}
                 onChange={(e) => handleChange('github', e.target.value)}
                 className={inputClasses}
-                placeholder="github.com/alexmorgan"
+                placeholder="github.com/johnsmith"
               />
             </div>
             <div className="space-y-1">
@@ -401,7 +401,7 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ input, setInput, onGenerate, is
                 value={input.website}
                 onChange={(e) => handleChange('website', e.target.value)}
                 className={inputClasses}
-                placeholder="alexmorgan.dev"
+                placeholder="johnsmith.dev"
               />
             </div>
           </div>

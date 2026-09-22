@@ -12,7 +12,7 @@ import { Logo } from './components/Logo';
 
 const initialInput: UserInput = {
   templateId: 'classic',
-  photo: '',
+  photo: 'https://api.dicebear.com/7.x/micah/svg?seed=Alex&backgroundColor=transparent',
   fullName: '',
   email: '',
   phone: '',
@@ -202,7 +202,16 @@ function AppContent() {
       <nav className="no-print bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40 transition-colors duration-200 w-full">
         <div className="max-w-5xl mx-auto px-2.5 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-14 sm:h-16 gap-1">
-            <div className="flex items-center cursor-pointer select-none shrink min-w-0 pr-1" onClick={() => setAppState(AppState.EDITING)}>
+            <div 
+              className="flex items-center cursor-pointer select-none shrink min-w-0 pr-1 transition-opacity hover:opacity-90 active:scale-98" 
+              onClick={() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                document.documentElement.scrollTo({ top: 0, behavior: 'smooth' });
+                document.body.scrollTo({ top: 0, behavior: 'smooth' });
+                setAppState(AppState.EDITING);
+              }}
+              title="Back to Top / Home"
+            >
               <Logo size="md" />
             </div>
             <div className="flex items-center gap-1 sm:gap-2.5 shrink-0">
@@ -267,8 +276,13 @@ function AppContent() {
 
       {/* Optional Login Modal */}
       {showLoginModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="w-full max-w-md my-auto">
+        <div 
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowLoginModal(false);
+          }}
+        >
+          <div className="w-full max-w-[380px] my-auto">
             <Login 
               onLogin={handleLogin} 
               onGuestLogin={handleGuestLogin} 
@@ -333,13 +347,15 @@ function AppContent() {
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="no-print bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-12 py-8 transition-colors duration-200">
-        <div className="max-w-5xl mx-auto px-4 text-center text-gray-400 dark:text-gray-500 text-sm">
-          <p>© {new Date().getFullYear()} Resume Architect.</p>
-          <p className="mt-1 text-xs">Developed by Echo Planner</p>
-        </div>
-      </footer>
+      {/* Footer - Only on Home page */}
+      {(appState === AppState.EDITING || appState === AppState.GENERATING) && (
+        <footer className="no-print bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-12 py-8 transition-colors duration-200">
+          <div className="max-w-5xl mx-auto px-4 text-center text-gray-400 dark:text-gray-500 text-sm">
+            <p>© {new Date().getFullYear()} Resume Architect.</p>
+            <p className="mt-1 text-xs">Developed by Echo Planner</p>
+          </div>
+        </footer>
+      )}
     </div>
   );
 }
